@@ -148,10 +148,3 @@ train.py        # Training entry point
   year    = {2026}
 }
 ```
-
-## License
-
-MIT (see [`LICENSE`](LICENSE)), except for third-party components under their own licenses:
-the Sharpa Wave hand model in `assets/robot/sharpa/` (Apache-2.0), the vendored mjlab subset in
-`src/simulator/isaacsim/_vendor/mjlab/` (Apache-2.0) and the `third_party/rsl_rl_flashsac` submodule
-(BSD-3-Clause). The MANO hand model is not included and is subject to its own license.
