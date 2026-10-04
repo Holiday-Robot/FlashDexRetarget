@@ -1,0 +1,99 @@
+defaults:
+  - convex: coacd   # coacd | cuacd
+  - override hydra/job_logging: none
+  - override hydra/hydra_logging: none
+  - _self_
+
+dataset: ???
+robot: xhand
+workers: null   # null: half the CPU cores
+usd_gpu: 0
+
+steps:
+  convex: true
+  retarget: true
+  pack: true
+  usd: true
+  sdf: true
+
+desk:
+  mode: fit   # fit | keep | none
+  still_speed: 0.03
+  still_ang_speed: 0.3
+  min_still_sec: 0.1667
+  disk_height: 0.01
+  phantom_in_disk_frac: 0.9
+  phantom_z: 0.10
+  consolidate_z: 0.05
+  rest_band: [-0.02, 0.25]
+  contact_z: 0.02
+
+filters:
+  enable: true
+  contact: 0.015
+  edge_frames: 5
+  obj_offdisk_untouched: {frames: 5, max_height: 0.15}
+  wrist_acc_spike: {max_acc: 60.0, smooth: 3}
+  obj_below_desk: {min_z: -0.05}
+  too_short: {min_sec: 2.5}
+  first_unsupported: {base_band: 0.01, slack: 0.005}
+
+convex:
+  force: false
+  decimate_faces: 0
+
+retarget:
+  force: false
+  sim_dt: 0.002083
+  solver_iterations: 20
+  solver_ls_iterations: 50
+  n_guess: 48
+  guess_steps: 30
+  guess_jitter: 0.002
+  start_settle: 60
+  approach: {enable: true, backoff: 0.06, slide_frames: 30, close_frames: 30, preshape: 1.0}   # attempt 0
+  settle_steps: 80
+  recover_tip_err: 0.045
+  recover_window: 15
+  recover_cooldown: 30
+  attempts: 6
+  pen_weight: 0.5
+  smooth: 3
+  constraints:
+    palm: {torque: 10.0, solref: [0.02, 1.0], solimp: [0.0, 0.95, 10.0, 0.5, 2.0]}
+    tip: {torque: 1.0, solref: [0.01, 1.0], solimp: [0.0, 0.95, 0.01, 0.5, 2.0]}
+    tip_width_ring_pinky: 3.0
+    object: {torque: 10.0, solref: [0.002, 1.0], solimp: [0.9, 0.95, 0.001, 0.5, 2.0]}
+  contact: {impratio: 1.0, o_solref: [0.02, 1.0], o_solimp: [0.95, 0.99, 0.002, 0.5, 2.0]}
+  scene:
+    armature: 1.0
+    kp_wrist: 1000.0
+    kp_finger: 300.0
+    desk_depth: 0.3
+    object_density: 1000.0
+    object_armature: 1.0e-4
+    object_frictionloss: 1.0e-4
+    pair_solref: [0.02, 1.0]
+    pair_friction: [1.0, 1.0, 0.1, 0.0, 0.0]
+    object_pair_friction: [0.01, 0.01, 1.0e-4, 0.0, 0.0]
+  quality:
+    palm_acc_spike: {max_acc: 60.0}
+    hand_far_below_desk: {max_depth: 0.08}
+    tip_tracking: {max_dist: 0.03, max_frac: 0.35}
+    hand_obj_penetration: {max_depth: 0.02}
+    hand_desk_penetration: {max_depth: 0.02, frames: 5, after: 30}
+
+pack:
+  contact_threshold: 0.015
+  vel_sigma: 2
+
+sdf:   # grid_n, extent: must match commands.object.sdf
+  grid_n: 128
+  extent: 0.30
+  device: cuda          # cuda | cpu
+  gpus: [0]             # null: every visible GPU
+  workers_per_gpu: 8
+
+hydra:
+  run:
+    dir: ${dataset}

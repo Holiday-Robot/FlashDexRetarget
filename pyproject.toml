@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FlashDexRetarget"
+version = "0.0.1"
+description = "Bimanual dexterous motion retargeting with FlashSAC on Isaac Sim: hand + object policies tracking human motion capture."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
+authors = [{ name = "Kyungmin Lee", email = "char7165@gmail.com" }]
+keywords = ["robotics", "reinforcement-learning", "manipulation", "isaac-sim", "flashsac"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# The FlashDexRetarget env, installed with --no-deps only (README "Setup"): pip cannot resolve
+# the Isaac stack, so these pins document the env rather than drive a resolve.
+dependencies = [
+  # requirements/isaac_cu128.txt (Isaac Sim / Isaac Lab freeze)
+  "isaacsim==5.1.0.0",
+  "isaaclab==2.3.0",
+  "torch==2.7.0",               # +cu128
+  "warp-lang==1.10.1",
+  "numpy==1.26.0",
+  "scipy==1.15.3",
+  "trimesh==4.5.1",
+  "coacd==1.0.10",              # data preparation only (src/retarget/object/obj_convex_decompose.py)
+  "cuacd==0.1.0",               # data preparation only, convex=cuacd
+  "smplx==0.1.28",              # data preparation only: MANO layer (src/retarget/human_demo)
+  "mujoco==3.10.0",             # CPU only (MJCF metadata); no mujoco-warp
+  "hydra-core==1.3.2",
+  "omegaconf==2.3.0",
+  "gymnasium==1.2.0",
+  "wandb==0.15.12",             # rsl-rl-flashsac declares >=0.19 but runs on the freeze's
+  "tqdm==4.67.1",
+  "prettytable==3.3.0",         # vendored mjlab managers
+  # on top of the freeze (replacing its rsl-rl-lib 5.0.1 / tensordict 0.9.0)
+  "rsl-rl-lib==5.5.1",
+  "tensordict==0.13.0",
+  "pyvers==0.2.2",              # required by tensordict 0.13
+  "rsl-rl-flashsac==0.1.0",     # third_party/rsl_rl_flashsac @ 9822b1b, editable
+]
+
+[project.optional-dependencies]
+dev = [
+  "pyright>=1.1.408",
+  "ruff>=0.14.14",
+  "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["agents*", "evaluation*", "utils*", "retarget*", "common*", "envs*", "simulator*", "runner*"]
+namespaces = true
+
+# ─── Linter / formatter ───────────────────────────────────────────────────
+
+[tool.ruff]
+src = ["src"]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "third_party",
+           "src/simulator/isaacsim/_vendor"]   # vendored upstream mjlab
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
+ignore = ["B011", "B905", "B007", "F841", "E731"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# ─── Type checkers ────────────────────────────────────────────────────────
+
+[tool.pyright]
+pythonVersion = "3.11"
+include = ["src"]
+exclude = ["third_party", "src/simulator/isaacsim/_vendor", "**/__pycache__"]
+typeCheckingMode = "basic"
+reportPrivateImportUsage = "none"
+reportAttributeAccessIssue = "none"
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportOptionalOperand = "warning"
+reportArgumentType = "warning"
+reportAssignmentType = "warning"
+reportCallIssue = "warning"
+reportGeneralTypeIssues = "warning"

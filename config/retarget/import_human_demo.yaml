@@ -1,0 +1,17 @@
+defaults:
+  - source: ???   # taco | oakink2 | hot3d
+  - _self_
+  - override hydra/job_logging: none
+  - override hydra/hydra_logging: none
+
+raw: ???
+dataset: ???
+mano_dir: null   # null: assets/mano/
+sides: both      # both | right | left
+workers: null    # null: half the CPU cores
+fps: 60
+max_obj_rot_step_deg: 60
+
+hydra:
+  run:
+    dir: ${dataset}/human_demo

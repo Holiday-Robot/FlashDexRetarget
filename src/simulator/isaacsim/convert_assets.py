@@ -1,0 +1,336 @@
+"""Standalone CLI: convert COACD objects + the xhand URDF to USD via IsaacLab
+UrdfConverter (headless AppLauncher boot)."""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import os
+import sys
+import xml.etree.ElementTree as ET
+
+REPO_SIM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), *[".."] * 3))
+ROBOT_DIR = os.path.join(REPO_SIM_DIR, "assets", "robot")
+ROBOT_URDF_DIR = os.path.join(ROBOT_DIR, "xhand", "urdf")
+
+
+def robot_urdf(variant: str, suffix: str = "", robot: str = "xhand") -> str:
+    """Source URDF per robot and variant (xhand_right.urdf, sharpa_bimanual.urdf, ...)."""
+    return os.path.join(ROBOT_DIR, robot, "urdf", f"{robot}_{variant}{suffix}.urdf")
+
+OBJ_DENSITY = 800.0  # kg/m^3, matches get_object_spec / holosoma taco URDFs
+OBJ_MASS_CLAMP = (0.05, 0.5)  # kg, matches get_object_spec
+
+# "collision == visual" debug variant: same physics, visuals replaced by the
+# exact shapes PhysX collides with. Runtime switch: FDR_COLVIS=1.
+COLVIS_OBJ_DIRNAME = ".isaac_usd_colvis"
+COLVIS_ROBOT_DIRNAME = "converted_colvis"
+COLVIS_RGBA = "0.85 0.45 0.2 1"
+
+
+def colvis_enabled() -> bool:
+    """Runtime switch (FDR_COLVIS=1) for the collision-as-visual assets."""
+    return os.environ.get("FDR_COLVIS", "0") == "1"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--objects", nargs="*", default=[], help="object ids under <data-root>/objects/",
+    )
+    parser.add_argument("--data-root", help="dataset directory holding objects/ (needed with --objects)")
+    parser.add_argument("--robot", action="store_true", help="also convert a robot URDF")
+    parser.add_argument("--robot-name", default="xhand", choices=["xhand", "sharpa"],
+                        help="sharpa ships the bimanual URDF only (--robot-variant bimanual)")
+    parser.add_argument(
+        "--robot-variant", default="right", choices=["right", "left", "bimanual"],
+        help="which <robot>_<variant>.urdf to convert (xhand: generate via mjcf_to_urdf.py)",
+    )
+    parser.add_argument("--force", action="store_true", help="reconvert even if USD is up to date")
+    parser.add_argument("--robot-suffix", default="",
+                        help="convert xhand_<variant><suffix>.urdf into converted<suffix>/ "
+                             "(e.g. _spec)")
+    parser.add_argument(
+        "--collision-visual", action="store_true",
+        help="write the debug variant whose visual meshes ARE the collision geometry "
+        f"(objects -> {COLVIS_OBJ_DIRNAME}/, robot -> converted_colvis/); "
+        "select at runtime with FDR_COLVIS=1",
+    )
+    from isaaclab.app import AppLauncher
+
+    AppLauncher.add_app_launcher_args(parser)
+    args = parser.parse_args()
+    args.headless = True
+    return args
+
+
+def _log(msg: str) -> None:
+    print(f"[convert_assets] {msg}", flush=True)
+
+
+def _up_to_date(usd_path: str, sources: list[str]) -> bool:
+    if not os.path.exists(usd_path):
+        return False
+    usd_mtime = os.path.getmtime(usd_path)
+    return all(os.path.getmtime(s) <= usd_mtime for s in sources if os.path.exists(s))
+
+
+def object_mass_properties(obj_dir: str):
+    """(mass, raw mass, com, inertia) at density 800 with [0.05, 0.5] kg clamp;
+    convex-parts fallback when visual.obj is not watertight."""
+    import trimesh
+
+    visual = trimesh.load(os.path.join(obj_dir, "visual.obj"), force="mesh")
+    solid = visual
+    if not visual.is_watertight or visual.volume <= 0.0:
+        parts = []
+        convex_dir = os.path.join(obj_dir, "convex")
+        for f in sorted(os.listdir(convex_dir), key=lambda s: int(os.path.splitext(s)[0])):
+            parts.append(trimesh.load(os.path.join(convex_dir, f), force="mesh"))
+        solid = trimesh.util.concatenate(parts)
+        _log(f"  visual.obj not watertight -> mass props from {len(parts)} convex parts")
+    solid.density = OBJ_DENSITY
+    mass_raw = float(solid.mass)
+    mass = min(max(mass_raw, OBJ_MASS_CLAMP[0]), OBJ_MASS_CLAMP[1])
+    scale = mass / mass_raw
+    com = solid.center_mass
+    inertia = solid.moment_inertia * scale  # about COM, mesh-frame axes
+    return mass, mass_raw, com, inertia
+
+
+def author_object_urdf(
+    obj_dir: str, out_dir: str, collision_visual: bool = False
+) -> tuple[str, float, int]:
+    """Write the single-link URDF for one COACD object. Returns (path, mass, n_hulls).
+    collision_visual: render the COACD hulls instead of visual.obj (physics unchanged)."""
+    mass, mass_raw, com, inertia = object_mass_properties(obj_dir)
+    convex_dir = os.path.join(obj_dir, "convex")
+    hulls = sorted(os.listdir(convex_dir), key=lambda s: int(os.path.splitext(s)[0]))
+
+    ixx, iyy, izz = inertia[0, 0], inertia[1, 1], inertia[2, 2]
+    ixy, ixz, iyz = inertia[0, 1], inertia[0, 2], inertia[1, 2]
+    lines = [
+        '<?xml version="1.0"?>',
+        f"<!-- Auto-generated by convert_assets.py from {obj_dir}.",
+        f"     Inertial: density {OBJ_DENSITY} kg/m^3, raw mass {mass_raw:.6g} kg clamped to"
+        f" {mass:.6g} kg (inertia scaled to match). -->",
+        f'<robot name="object_{os.path.basename(obj_dir)}">',
+        '  <link name="baseLink">',
+        "    <inertial>",
+        f'      <origin rpy="0 0 0" xyz="{com[0]:.9g} {com[1]:.9g} {com[2]:.9g}"/>',
+        f'      <mass value="{mass:.9g}"/>',
+        f'      <inertia ixx="{ixx:.9g}" ixy="{ixy:.9g}" ixz="{ixz:.9g}"'
+        f' iyy="{iyy:.9g}" iyz="{iyz:.9g}" izz="{izz:.9g}"/>',
+        "    </inertial>",
+    ]
+    if collision_visual:
+        # Unique visual names: the URDF importer builds prim paths from them and
+        # errors out ("Used null prim") on multiple unnamed visuals.
+        for i, hull in enumerate(hulls):
+            lines += [
+                f'    <visual name="visual_{i}">',
+                '      <origin rpy="0 0 0" xyz="0 0 0"/>',
+                f'      <geometry><mesh filename="../convex/{hull}" scale="1.0 1.0 1.0"/></geometry>',
+                f'      <material name="mat"><color rgba="{COLVIS_RGBA}"/></material>',
+                "    </visual>",
+            ]
+    else:
+        lines += [
+            "    <visual>",
+            '      <origin rpy="0 0 0" xyz="0 0 0"/>',
+            '      <geometry><mesh filename="../visual.obj" scale="1.0 1.0 1.0"/></geometry>',
+            '      <material name="mat"><color rgba="0.75 0.7 0.6 1"/></material>',
+            "    </visual>",
+        ]
+    for i, hull in enumerate(hulls):
+        lines += [
+            f'    <collision name="collision_{i}">',
+            '      <origin rpy="0 0 0" xyz="0 0 0"/>',
+            f'      <geometry><mesh filename="../convex/{hull}" scale="1.0 1.0 1.0"/></geometry>',
+            "    </collision>",
+        ]
+    lines += ["  </link>", "</robot>", ""]
+
+    os.makedirs(out_dir, exist_ok=True)
+    urdf_path = os.path.join(out_dir, "object.urdf")
+    with open(urdf_path, "w") as f:
+        f.write("\n".join(lines))
+    return urdf_path, mass, len(hulls)
+
+
+def convert_object(obj_dir: str, force: bool, collision_visual: bool = False) -> None:
+    from isaaclab.sim.converters import UrdfConverter, UrdfConverterCfg
+
+    out_dir = os.path.join(obj_dir, COLVIS_OBJ_DIRNAME if collision_visual else ".isaac_usd")
+    usd_path = os.path.join(out_dir, "object.usd")
+    sources = [os.path.join(obj_dir, "visual.obj")]
+    convex_dir = os.path.join(obj_dir, "convex")
+    sources += [os.path.join(convex_dir, f) for f in os.listdir(convex_dir)]
+    if not force and _up_to_date(usd_path, sources):
+        _log(f"up to date, skipping: {usd_path}")
+        return
+
+    urdf_path, mass, n_hulls = author_object_urdf(obj_dir, out_dir, collision_visual)
+    cfg = UrdfConverterCfg(
+        asset_path=urdf_path,
+        usd_dir=out_dir,
+        usd_file_name="object.usd",
+        force_usd_conversion=True,
+        make_instanceable=False,
+        fix_base=False,
+        merge_fixed_joints=False,
+        link_density=OBJ_DENSITY,
+        joint_drive=None,
+        collider_type="convex_hull",
+    )
+    converter = UrdfConverter(cfg)
+    _log(f"converted {obj_dir} -> {converter.usd_path} (mass {mass:.4g} kg, {n_hulls} hulls)")
+    verify_usd(converter.usd_path)
+
+
+def author_robot_colvis_urdf(out_dir: str, variant: str = "right") -> str:
+    """xhand URDF variant whose visuals are the per-collision-mesh convex hulls —
+    exactly what PhysX collides with under collider_type='convex_hull'."""
+    import trimesh
+
+    src_urdf = robot_urdf(variant)
+    urdf_dir = os.path.dirname(src_urdf)
+    hull_dir = os.path.join(out_dir, "hull_meshes")
+    os.makedirs(hull_dir, exist_ok=True)
+    tree = ET.parse(src_urdf)
+    n_hulls = 0
+    for link in tree.getroot().findall("link"):
+        for vis in link.findall("visual"):
+            link.remove(vis)
+        for i, col in enumerate(link.findall("collision")):
+            mesh_el = col.find("geometry/mesh")
+            if mesh_el is None:
+                raise RuntimeError(f"non-mesh collision in link {link.get('name')!r}")
+            src = os.path.normpath(os.path.join(urdf_dir, mesh_el.get("filename")))
+            stem = os.path.splitext(os.path.basename(src))[0]
+            hull_path = os.path.join(hull_dir, f"{stem}.obj")
+            if not _up_to_date(hull_path, [src]):
+                trimesh.load(src, force="mesh").convex_hull.export(hull_path)
+            n_hulls += 1
+            # Unique names: the importer builds prim paths from them (see objects).
+            vis = ET.SubElement(link, "visual", name=f"visual_{i}_{stem}")
+            origin = col.find("origin")
+            if origin is not None:
+                vis.append(copy.deepcopy(origin))
+            geom = ET.SubElement(vis, "geometry")
+            ET.SubElement(
+                geom, "mesh",
+                filename=f"hull_meshes/{stem}.obj",
+                scale=mesh_el.get("scale", "1.0 1.0 1.0"),
+            )
+            mat = ET.SubElement(vis, "material", name="mat_colvis")
+            ET.SubElement(mat, "color", rgba=COLVIS_RGBA)
+    urdf_path = os.path.join(out_dir, f"xhand_{variant}_colvis.urdf")
+    tree.write(urdf_path)
+    _log(f"  authored collision-visual robot URDF ({n_hulls} hulls) -> {urdf_path}")
+    return urdf_path
+
+
+def convert_robot(force: bool, collision_visual: bool = False, variant: str = "right",
+                  suffix: str = "", robot: str = "xhand") -> None:
+    from isaaclab.sim.converters import UrdfConverter, UrdfConverterCfg
+
+    if collision_visual and robot != "xhand":
+        raise ValueError("--collision-visual is xhand-only")
+    src_urdf = robot_urdf(variant, suffix, robot)
+    # A suffixed variant gets its own output dir so it never shadows the stock USD.
+    out_dir = os.path.join(
+        ROBOT_DIR, robot, "urdf",
+        COLVIS_ROBOT_DIRNAME if collision_visual else f"converted{suffix}",
+    )
+    usd_path = os.path.join(out_dir, f"{robot}_{variant}{suffix}.usd")
+    if not force and _up_to_date(usd_path, [src_urdf]):
+        _log(f"up to date, skipping: {usd_path}")
+        return
+    urdf_src = src_urdf
+    if collision_visual:
+        os.makedirs(out_dir, exist_ok=True)
+        urdf_src = author_robot_colvis_urdf(out_dir, variant)
+    cfg = UrdfConverterCfg(
+        asset_path=urdf_src,
+        usd_dir=out_dir,
+        usd_file_name=f"{robot}_{variant}{suffix}.usd",
+        force_usd_conversion=True,
+        make_instanceable=False,
+        # MJCF anchors the wrist chain at worldbody: the 6 wrist joints ARE the
+        # floating base, so the URDF "world" root is welded to the stage.
+        fix_base=True,
+        # Keep track_hand_right_*_tip fixed links as bodies (fingertip frames).
+        merge_fixed_joints=False,
+        joint_drive=UrdfConverterCfg.JointDriveCfg(
+            drive_type="force",
+            target_type="position",
+            # Neutral drives; the env's IsaacLab actuator cfgs own kp/kv.
+            gains=UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0.0, damping=0.0),
+        ),
+        collider_type="convex_hull",
+        self_collision=False,
+    )
+    converter = UrdfConverter(cfg)
+    _log(f"converted robot -> {converter.usd_path}")
+    sides = ("right", "left") if variant == "bimanual" else (variant,)
+    verify_usd(converter.usd_path, expect_links=[f"track_hand_{s}_{f}_tip" for s in sides
+                                                for f in ("thumb", "index", "middle", "ring", "pinky")])
+
+
+def verify_usd(usd_path: str, expect_links: list[str] | None = None) -> None:
+    from pxr import Usd, UsdPhysics
+
+    stage = Usd.Stage.Open(usd_path)
+    if stage is None:
+        raise RuntimeError(f"cannot open generated USD: {usd_path}")
+    names, n_rigid, n_coll, masses = [], 0, 0, []
+    # TraverseInstanceProxies: the importer parks meshes behind reference arcs
+    # that plain Traverse() skips (they compose as instance proxies).
+    for prim in stage.Traverse(Usd.TraverseInstanceProxies()):
+        names.append(prim.GetName())
+        if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            n_rigid += 1
+        if prim.HasAPI(UsdPhysics.CollisionAPI):
+            n_coll += 1
+        if prim.HasAPI(UsdPhysics.MassAPI):
+            attr = UsdPhysics.MassAPI(prim).GetMassAttr()
+            if attr and attr.HasAuthoredValue():
+                masses.append((prim.GetName(), float(attr.Get())))
+    _log(f"  verify {os.path.basename(usd_path)}: rigid-body prims={n_rigid}, "
+         f"collision prims={n_coll}, authored masses={masses[:4]}{'...' if len(masses) > 4 else ''}")
+    for link in expect_links or []:
+        if link not in names:
+            raise RuntimeError(f"expected link {link!r} missing from {usd_path} prims")
+    if n_coll == 0 and expect_links is None:
+        raise RuntimeError(f"no collision prims in {usd_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    from isaaclab.app import AppLauncher
+
+    app_launcher = AppLauncher(args)
+    _ = app_launcher.app  # boot kit; converters need a live stage context
+
+    if args.objects and not args.data_root:
+        raise SystemExit("--objects needs --data-root")
+    # A relative root breaks the importer's sublayer paths (@/configuration/...): empty USDs, then a hang.
+    args.data_root = args.data_root and os.path.abspath(args.data_root)
+    for obj_id in args.objects:
+        obj_dir = os.path.join(args.data_root, "objects", obj_id)
+        if not os.path.isdir(obj_dir):
+            raise FileNotFoundError(f"object dir not found: {obj_dir}")
+        convert_object(obj_dir, force=args.force, collision_visual=args.collision_visual)
+    if args.robot:
+        convert_robot(force=args.force, collision_visual=args.collision_visual,
+                      variant=args.robot_variant, suffix=args.robot_suffix, robot=args.robot_name)
+
+    _log("all conversions done")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)  # simulation_app.close() segfaults (isaacsim 5.1 shutdown bug)
+
+
+if __name__ == "__main__":
+    main()

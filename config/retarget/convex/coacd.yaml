@@ -1,0 +1,17 @@
+name: coacd
+seed: 1
+coacd:
+  threshold: 0.07
+  max_convex_hull: 32
+  preprocess_mode: auto
+  preprocess_resolution: 50
+  resolution: 2000
+  mcts_nodes: 20
+  mcts_iterations: 2000
+  mcts_max_depth: 5
+  pca: false
+  merge: true
+  decimate: false
+  max_ch_vertex: 256
+  extrude: false
+  apx_mode: ch

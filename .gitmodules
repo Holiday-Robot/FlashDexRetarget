@@ -1,0 +1,3 @@
+[submodule "third_party/rsl_rl_flashsac"]
+	path = third_party/rsl_rl_flashsac
+	url = https://github.com/Holiday-Robot/rsl_rl_flashsac.git

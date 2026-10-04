@@ -1,0 +1,10 @@
+name: hot3d
+table_z: 1.0
+desk_over_recording: false
+segment:        # frames at 30 Hz
+  tip_contact: 0.02
+  link_contact: 0.01
+  gap_frames: 15
+  min_frames: 30
+  pad_frames: 10
+  modes: [B]           # A: one hand active, B: both hands on one object, C: on two objects

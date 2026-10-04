@@ -1,0 +1,171 @@
+# @package _global_
+
+obs:
+  _target_: "envs.observations.motion_tracking.MotionTrackingObs"
+
+  obs_dict:
+    actor_obs: [
+      # ── Robot Proprioception ───────────────────
+      robot_wrist_pose_w,
+      robot_wrist_lin_vel_w,
+      robot_wrist_ang_vel_w,
+      robot_joint_pos,
+      robot_joint_vel,
+      robot_tip_trans_wrist,
+      robot_tip_lin_vel_wrist,
+      dof_target_pos,
+
+      # ── Ref Motion Info ────────────────────────
+      ref_future_mano_body_delta_w,
+
+      # ── Object State (wrist frame) ─────────────
+      obj_trans_wrist,
+      obj_quat_wrist,
+      obj_lin_vel_wrist,
+      obj_ang_vel_wrist,
+      obj_point_cloud_wrist,
+
+      # ── Ref Object Info (wrist frame) ──────────
+      ref_future_obj_trans_delta_wrist,
+      ref_future_obj_quat_delta_wrist,
+      ref_future_obj_point_cloud_delta_wrist,
+
+      # ── Robot ↔ Object Interaction ──────────────
+      #   Contact (side-looping)
+      robot_body_contact_wrench_wrist,
+      robot_body_contact_trans_wrist,
+      #   Distance (object SDF and its gradient at robot links, wrist frame)
+      robot_links_obj_sdf,
+      robot_links_obj_normal_wrist,
+    ]
+
+    critic_obs: [
+      # ── Robot Proprioception ───────────────────
+      robot_wrist_pose_w,
+      robot_wrist_lin_vel_w,
+      robot_wrist_ang_vel_w,
+      robot_joint_pos,
+      robot_joint_vel,
+      robot_tip_trans_wrist,
+      robot_tip_lin_vel_wrist,
+      dof_target_pos,
+
+      # ── Ref Motion Info ────────────────────────
+      ref_future_mano_body_delta_w,
+
+      # ── Object State (wrist frame) ─────────────
+      obj_trans_wrist,
+      obj_quat_wrist,
+      obj_lin_vel_wrist,
+      obj_ang_vel_wrist,
+      obj_point_cloud_wrist,
+
+      # ── Ref Object Info (wrist frame) ──────────
+      ref_future_obj_trans_delta_wrist,
+      ref_future_obj_quat_delta_wrist,
+      ref_future_obj_point_cloud_delta_wrist,
+
+      # ── Robot ↔ Object Interaction ──────────────
+      #   Contact (side-looping)
+      robot_body_contact_wrench_wrist,
+      robot_body_contact_trans_wrist,
+      #   Distance (object SDF and its gradient at robot links, wrist frame)
+      robot_links_obj_sdf,
+      robot_links_obj_normal_wrist,
+    ]
+
+  # K-step future-trajectory window: one obs group kept out of the actor/critic flat obs and
+  # appended to the flat obs tail for the traj encoder.
+  encoded_groups:
+    future_traj: ref_future_traj_wrist
+
+  # Term params (point cloud, SDF links, future window).
+  obs_params:
+    ref_future_mano_body_delta_w:
+      components: [
+        trans,
+        lin_vel,
+      ]
+    obj_point_cloud_wrist:
+      n_points: 128
+    ref_future_obj_point_cloud_delta_wrist:
+      n_points: 128
+    # robot points for the object SDF: palm / <finger>_tip sites, or robot body names without the side prefix
+    robot_links_obj_sdf:
+      links: [
+        palm,
+        thumb_tip,
+        index_tip,
+        middle_tip,
+        ring_tip,
+        pinky_tip,
+      ]
+    robot_links_obj_normal_wrist:
+      links: ${obs.obs_params.robot_links_obj_sdf.links}
+    # future frames at stride*(1..n_future); n_future must match runner.agent.traj_encoder.n_future
+    ref_future_traj_wrist:
+      n_future: 10
+      stride: 1
+      # per future step and side: future ref - current in the current wrist frame, in this order
+      components: [
+        obj_trans_wrist,
+        obj_rot6d_wrist,
+        obj_lin_vel_wrist,
+        obj_ang_vel_wrist,
+        mano_wrist_trans_wrist,
+        mano_wrist_rot6d_wrist,
+        mano_tip_trans_wrist,
+      ]
+
+  obs_scales:
+    robot_wrist_pose_w:                     1.0
+    robot_wrist_lin_vel_w:                  2.0
+    robot_wrist_ang_vel_w:                  0.25
+    robot_joint_pos:                        1.0
+    dof_target_pos:                         1.0
+    robot_joint_vel:                        0.1
+    robot_tip_trans_wrist:                  1.0
+    robot_tip_lin_vel_wrist:                2.0
+    obj_trans_wrist:                        1.0
+    obj_quat_wrist:                         1.0
+    obj_lin_vel_wrist:                      2.0
+    obj_ang_vel_wrist:                      0.25
+    obj_point_cloud_wrist:                  1.0
+    ref_future_obj_trans_delta_wrist:       1.0
+    ref_future_obj_quat_delta_wrist:        1.0
+    ref_future_obj_point_cloud_delta_wrist: 1.0
+    ref_future_mano_body_delta_w:           1.0
+    robot_body_contact_wrench_wrist:        1.0
+    robot_body_contact_trans_wrist:         1.0
+    robot_links_obj_sdf:                    1.0
+    robot_links_obj_normal_wrist:           1.0
+
+  # Per-term symmetric uniform noise amplitude. 0.0 = no noise (builder skips).
+  # Active only on groups with enable_corruption=true (actor in this config).
+  noise_scales:
+    robot_wrist_pose_w:                     0.0
+    robot_wrist_lin_vel_w:                  0.0
+    robot_wrist_ang_vel_w:                  0.0
+    robot_joint_pos:                        0.0
+    dof_target_pos:                         0.0
+    robot_joint_vel:                        0.0
+    robot_tip_trans_wrist:                  0.0
+    robot_tip_lin_vel_wrist:                0.0
+    obj_trans_wrist:                        0.0
+    obj_quat_wrist:                         0.0
+    obj_lin_vel_wrist:                      0.0
+    obj_ang_vel_wrist:                      0.0
+    obj_point_cloud_wrist:                  0.0
+    ref_future_obj_trans_delta_wrist:       0.0
+    ref_future_obj_quat_delta_wrist:        0.0
+    ref_future_obj_point_cloud_delta_wrist: 0.0
+    ref_future_mano_body_delta_w:           0.0
+    robot_body_contact_wrench_wrist:        0.0
+    robot_body_contact_trans_wrist:         0.0
+    robot_links_obj_sdf:                    0.0
+    robot_links_obj_normal_wrist:           0.0
+
+  # actor gets noise corruption, critic does not
+  actor_enable_corruption: true
+  critic_enable_corruption: false
+  nan_policy: "sanitize"

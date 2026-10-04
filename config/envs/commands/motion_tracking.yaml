@@ -1,0 +1,105 @@
+# @package _global_
+
+commands:
+  name: "motion"
+  _target_: "envs.commands.motion_tracking.motion_tracking_cfg.MotionTrackingCommandCfg"
+
+  motion_file: ???
+
+  entity_name: ${robot.entity_name}
+
+  resampling_time_range: [1.0e+9, 1.0e+9]   # no internal resample
+  debug_vis: false
+
+  body_mapping: ${robot.body_mapping}
+  finger_names: ${robot.body_names.fingers}
+  joint_names: ${robot.joint_names}
+  site_names: ${robot.site_names}
+
+  sampling:
+    mode: "uniform"   # uniform | start
+    start_frame: 0
+
+  # Episode-constant bias on the references served to obs and RSI; rewards keep the clean ones.
+  ref_noise:
+    enable: false
+    obj_trans: 0.02
+    obj_rot_deg: 6.0
+    obj_lin_vel: 0.05
+    obj_ang_vel_deg: 20.0
+    wrist_trans: 0.02
+    wrist_rot_deg: 6.0
+    wrist_lin_vel: 0.05
+    wrist_ang_vel_deg: 20.0
+    depenetrate: true
+    depen_slack: 0.003
+
+  hand:
+    joint_position_range: [0.0, 0.0]
+    noise_to_initial_level: 0.1
+
+    init_noise_scale:
+      wrist_trans: 0.01
+      wrist_rot_deg: 10.0
+      finger_range_frac: 0.125
+      wrist_trans_vel: 0.01
+      wrist_rot_vel: 0.01
+      finger_vel: 0.1   # replaces the reference finger velocity
+
+  object:
+    entity_names: null
+    mesh_paths: null
+    mesh_scales: null
+    shared_slots: null
+
+    density: 800.0
+
+    sdf:
+      grid_extent: 0.30
+      grid_n: 128
+
+    pin_objects: true
+    pin_mode: "xfrc"   # xfrc | none
+    xfrc:
+      kp:
+        pos: 0.0
+        rot: 0.0
+      kd:
+        pos: 0.0
+        rot: 0.0
+      omega_rot: 20.0
+      zeta_rot: 1.0
+      contact_scale: 1.0
+
+    perturb:
+      enabled: false
+      force_scale: 0.0
+      torque_scale: 0.0
+      start_prob: 0.05
+      continue_prob: 0.95
+      gate_lag_s: 0.5
+      height_thresh: 0.03
+      require_assist_decayed: true
+
+    static_offset:
+      enable: false
+      prob: 0.5
+      min_cm: 1.5
+      max_cm: 3.5
+      static_window_steps: 60
+      static_eps_cm: 2.0
+      away_from_other_hand: true
+      sides: [left]
+
+    support_disks:
+      enable: false
+      count: 4
+      radii: [0.08, 0.15, 0.25, 0.4]
+      height: 0.01
+      radius_margin: 0.0
+      park: [0.0, 2.0, 0.5]
+      park_stride: 0.6
+      friction: [1.0, 0.005, 0.0001]
+      robot_collision: true
+      rgba: [0.55, 0.55, 0.6, 1.0]
+      entity_names: null

@@ -1,0 +1,422 @@
+# @package _global_
+
+robot:
+  entity_name: robot
+  self_collision: true
+
+  xml_path: assets/robot/sharpa/bimanual.xml
+
+  body_names:
+    fingers: [thumb, index, middle, ring, pinky]
+
+  site_names:
+    palm:
+      right: right_palm
+      left: left_palm
+    tip:
+      right:
+      - track_hand_right_thumb_tip
+      - track_hand_right_index_tip
+      - track_hand_right_middle_tip
+      - track_hand_right_ring_tip
+      - track_hand_right_pinky_tip
+      left:
+      - track_hand_left_thumb_tip
+      - track_hand_left_index_tip
+      - track_hand_left_middle_tip
+      - track_hand_left_ring_tip
+      - track_hand_left_pinky_tip
+    contact:
+      right:
+      - contact_right_thumb_tip
+      - contact_right_index_tip
+      - contact_right_middle_tip
+      - contact_right_ring_tip
+      - contact_right_pinky_tip
+      left:
+      - contact_left_thumb_tip
+      - contact_left_index_tip
+      - contact_left_middle_tip
+      - contact_left_ring_tip
+      - contact_left_pinky_tip
+
+  contact_links:
+    right:
+      - R_forearm_rot_y_link
+      - right_thumb_MC
+      - right_thumb_PP
+      - right_thumb_DP
+      - right_index_MCP_VL
+      - right_index_PP
+      - right_index_MP
+      - right_index_DP
+      - right_middle_MCP_VL
+      - right_middle_PP
+      - right_middle_MP
+      - right_middle_DP
+      - right_ring_MCP_VL
+      - right_ring_PP
+      - right_ring_MP
+      - right_ring_DP
+      - right_pinky_MC
+      - right_pinky_MCP_VL
+      - right_pinky_PP
+      - right_pinky_MP
+      - right_pinky_DP
+    left:
+      - L_forearm_rot_y_link
+      - left_thumb_MC
+      - left_thumb_PP
+      - left_thumb_DP
+      - left_index_MCP_VL
+      - left_index_PP
+      - left_index_MP
+      - left_index_DP
+      - left_middle_MCP_VL
+      - left_middle_PP
+      - left_middle_MP
+      - left_middle_DP
+      - left_ring_MCP_VL
+      - left_ring_PP
+      - left_ring_MP
+      - left_ring_DP
+      - left_pinky_MC
+      - left_pinky_MCP_VL
+      - left_pinky_PP
+      - left_pinky_MP
+      - left_pinky_DP
+  
+  init_state:
+    pos:     [0.0, 0.0, 0.0]
+    rot:     [1.0, 0.0, 0.0, 0.0]
+    lin_vel: [0.0, 0.0, 0.0]
+    ang_vel: [0.0, 0.0, 0.0]
+
+    joint_pos:
+      R_forearm_pos_x_joint: 0.0
+      R_forearm_pos_y_joint: 0.0
+      R_forearm_pos_z_joint: 0.0
+      R_forearm_rot_z_joint: 0.0
+      R_forearm_rot_x_joint: 0.0
+      R_forearm_rot_y_joint: 0.0
+      right_thumb_CMC_FE: 0.0
+      right_thumb_CMC_AA: 0.0
+      right_thumb_MCP_FE: 0.0
+      right_thumb_MCP_AA: 0.0
+      right_thumb_IP: 0.0
+      right_index_MCP_FE: 0.0
+      right_index_MCP_AA: 0.0
+      right_index_PIP: 0.0
+      right_index_DIP: 0.0
+      right_middle_MCP_FE: 0.0
+      right_middle_MCP_AA: 0.0
+      right_middle_PIP: 0.0
+      right_middle_DIP: 0.0
+      right_ring_MCP_FE: 0.0
+      right_ring_MCP_AA: 0.0
+      right_ring_PIP: 0.0
+      right_ring_DIP: 0.0
+      right_pinky_CMC: 0.0
+      right_pinky_MCP_FE: 0.0
+      right_pinky_MCP_AA: 0.0
+      right_pinky_PIP: 0.0
+      right_pinky_DIP: 0.0
+      L_forearm_pos_x_joint: 0.0
+      L_forearm_pos_y_joint: 0.0
+      L_forearm_pos_z_joint: 0.0
+      L_forearm_rot_z_joint: 0.0
+      L_forearm_rot_x_joint: 0.0
+      L_forearm_rot_y_joint: 0.0
+      left_thumb_CMC_FE: 0.0
+      left_thumb_CMC_AA: 0.0
+      left_thumb_MCP_FE: 0.0
+      left_thumb_MCP_AA: 0.0
+      left_thumb_IP: 0.0
+      left_index_MCP_FE: 0.0
+      left_index_MCP_AA: 0.0
+      left_index_PIP: 0.0
+      left_index_DIP: 0.0
+      left_middle_MCP_FE: 0.0
+      left_middle_MCP_AA: 0.0
+      left_middle_PIP: 0.0
+      left_middle_DIP: 0.0
+      left_ring_MCP_FE: 0.0
+      left_ring_MCP_AA: 0.0
+      left_ring_PIP: 0.0
+      left_ring_DIP: 0.0
+      left_pinky_CMC: 0.0
+      left_pinky_MCP_FE: 0.0
+      left_pinky_MCP_AA: 0.0
+      left_pinky_PIP: 0.0
+      left_pinky_DIP: 0.0
+    joint_vel:
+      R_forearm_pos_x_joint: 0.0
+      R_forearm_pos_y_joint: 0.0
+      R_forearm_pos_z_joint: 0.0
+      R_forearm_rot_z_joint: 0.0
+      R_forearm_rot_x_joint: 0.0
+      R_forearm_rot_y_joint: 0.0
+      right_thumb_CMC_FE: 0.0
+      right_thumb_CMC_AA: 0.0
+      right_thumb_MCP_FE: 0.0
+      right_thumb_MCP_AA: 0.0
+      right_thumb_IP: 0.0
+      right_index_MCP_FE: 0.0
+      right_index_MCP_AA: 0.0
+      right_index_PIP: 0.0
+      right_index_DIP: 0.0
+      right_middle_MCP_FE: 0.0
+      right_middle_MCP_AA: 0.0
+      right_middle_PIP: 0.0
+      right_middle_DIP: 0.0
+      right_ring_MCP_FE: 0.0
+      right_ring_MCP_AA: 0.0
+      right_ring_PIP: 0.0
+      right_ring_DIP: 0.0
+      right_pinky_CMC: 0.0
+      right_pinky_MCP_FE: 0.0
+      right_pinky_MCP_AA: 0.0
+      right_pinky_PIP: 0.0
+      right_pinky_DIP: 0.0
+      L_forearm_pos_x_joint: 0.0
+      L_forearm_pos_y_joint: 0.0
+      L_forearm_pos_z_joint: 0.0
+      L_forearm_rot_z_joint: 0.0
+      L_forearm_rot_x_joint: 0.0
+      L_forearm_rot_y_joint: 0.0
+      left_thumb_CMC_FE: 0.0
+      left_thumb_CMC_AA: 0.0
+      left_thumb_MCP_FE: 0.0
+      left_thumb_MCP_AA: 0.0
+      left_thumb_IP: 0.0
+      left_index_MCP_FE: 0.0
+      left_index_MCP_AA: 0.0
+      left_index_PIP: 0.0
+      left_index_DIP: 0.0
+      left_middle_MCP_FE: 0.0
+      left_middle_MCP_AA: 0.0
+      left_middle_PIP: 0.0
+      left_middle_DIP: 0.0
+      left_ring_MCP_FE: 0.0
+      left_ring_MCP_AA: 0.0
+      left_ring_PIP: 0.0
+      left_ring_DIP: 0.0
+      left_pinky_CMC: 0.0
+      left_pinky_MCP_FE: 0.0
+      left_pinky_MCP_AA: 0.0
+      left_pinky_PIP: 0.0
+      left_pinky_DIP: 0.0
+  articulation:
+    actuators:
+    - target_names_expr:
+      - R_forearm_pos_x_joint
+      - R_forearm_pos_y_joint
+      - R_forearm_pos_z_joint
+      - R_forearm_rot_z_joint
+      - R_forearm_rot_x_joint
+      - R_forearm_rot_y_joint
+      - right_thumb_CMC_FE
+      - right_thumb_CMC_AA
+      - right_thumb_MCP_FE
+      - right_thumb_MCP_AA
+      - right_thumb_IP
+      - right_index_MCP_FE
+      - right_index_MCP_AA
+      - right_index_PIP
+      - right_index_DIP
+      - right_middle_MCP_FE
+      - right_middle_MCP_AA
+      - right_middle_PIP
+      - right_middle_DIP
+      - right_ring_MCP_FE
+      - right_ring_MCP_AA
+      - right_ring_PIP
+      - right_ring_DIP
+      - right_pinky_CMC
+      - right_pinky_MCP_FE
+      - right_pinky_MCP_AA
+      - right_pinky_PIP
+      - right_pinky_DIP
+      - L_forearm_pos_x_joint
+      - L_forearm_pos_y_joint
+      - L_forearm_pos_z_joint
+      - L_forearm_rot_z_joint
+      - L_forearm_rot_x_joint
+      - L_forearm_rot_y_joint
+      - left_thumb_CMC_FE
+      - left_thumb_CMC_AA
+      - left_thumb_MCP_FE
+      - left_thumb_MCP_AA
+      - left_thumb_IP
+      - left_index_MCP_FE
+      - left_index_MCP_AA
+      - left_index_PIP
+      - left_index_DIP
+      - left_middle_MCP_FE
+      - left_middle_MCP_AA
+      - left_middle_PIP
+      - left_middle_DIP
+      - left_ring_MCP_FE
+      - left_ring_MCP_AA
+      - left_ring_PIP
+      - left_ring_DIP
+      - left_pinky_CMC
+      - left_pinky_MCP_FE
+      - left_pinky_MCP_AA
+      - left_pinky_PIP
+      - left_pinky_DIP
+  joint_names:
+    wrist_trans:
+    - R_forearm_pos_x_joint
+    - R_forearm_pos_y_joint
+    - R_forearm_pos_z_joint
+    - L_forearm_pos_x_joint
+    - L_forearm_pos_y_joint
+    - L_forearm_pos_z_joint
+    wrist_rot:
+    - R_forearm_rot_z_joint
+    - R_forearm_rot_x_joint
+    - R_forearm_rot_y_joint
+    - L_forearm_rot_z_joint
+    - L_forearm_rot_x_joint
+    - L_forearm_rot_y_joint
+    finger:
+    - right_thumb_CMC_FE
+    - right_thumb_CMC_AA
+    - right_thumb_MCP_FE
+    - right_thumb_MCP_AA
+    - right_thumb_IP
+    - right_index_MCP_FE
+    - right_index_MCP_AA
+    - right_index_PIP
+    - right_index_DIP
+    - right_middle_MCP_FE
+    - right_middle_MCP_AA
+    - right_middle_PIP
+    - right_middle_DIP
+    - right_ring_MCP_FE
+    - right_ring_MCP_AA
+    - right_ring_PIP
+    - right_ring_DIP
+    - right_pinky_CMC
+    - right_pinky_MCP_FE
+    - right_pinky_MCP_AA
+    - right_pinky_PIP
+    - right_pinky_DIP
+    - left_thumb_CMC_FE
+    - left_thumb_CMC_AA
+    - left_thumb_MCP_FE
+    - left_thumb_MCP_AA
+    - left_thumb_IP
+    - left_index_MCP_FE
+    - left_index_MCP_AA
+    - left_index_PIP
+    - left_index_DIP
+    - left_middle_MCP_FE
+    - left_middle_MCP_AA
+    - left_middle_PIP
+    - left_middle_DIP
+    - left_ring_MCP_FE
+    - left_ring_MCP_AA
+    - left_ring_PIP
+    - left_ring_DIP
+    - left_pinky_CMC
+    - left_pinky_MCP_FE
+    - left_pinky_MCP_AA
+    - left_pinky_PIP
+    - left_pinky_DIP
+  collisions:
+  - geom_names_expr:
+    - collision_hand_right_palm_0
+    - collision_hand_right_thumb_2
+    - collision_hand_right_thumb_1
+    - collision_hand_right_thumb_0
+    - collision_hand_right_thumb_tip
+    - collision_hand_right_index_3
+    - collision_hand_right_index_2
+    - collision_hand_right_index_1
+    - collision_hand_right_index_0
+    - collision_hand_right_index_tip
+    - collision_hand_right_middle_3
+    - collision_hand_right_middle_2
+    - collision_hand_right_middle_1
+    - collision_hand_right_middle_0
+    - collision_hand_right_middle_tip
+    - collision_hand_right_ring_3
+    - collision_hand_right_ring_2
+    - collision_hand_right_ring_1
+    - collision_hand_right_ring_0
+    - collision_hand_right_ring_tip
+    - collision_hand_right_pinky_4
+    - collision_hand_right_pinky_3
+    - collision_hand_right_pinky_2
+    - collision_hand_right_pinky_1
+    - collision_hand_right_pinky_0
+    - collision_hand_right_pinky_tip
+    - collision_hand_left_palm_0
+    - collision_hand_left_thumb_2
+    - collision_hand_left_thumb_1
+    - collision_hand_left_thumb_0
+    - collision_hand_left_thumb_tip
+    - collision_hand_left_index_3
+    - collision_hand_left_index_2
+    - collision_hand_left_index_1
+    - collision_hand_left_index_0
+    - collision_hand_left_index_tip
+    - collision_hand_left_middle_3
+    - collision_hand_left_middle_2
+    - collision_hand_left_middle_1
+    - collision_hand_left_middle_0
+    - collision_hand_left_middle_tip
+    - collision_hand_left_ring_3
+    - collision_hand_left_ring_2
+    - collision_hand_left_ring_1
+    - collision_hand_left_ring_0
+    - collision_hand_left_ring_tip
+    - collision_hand_left_pinky_4
+    - collision_hand_left_pinky_3
+    - collision_hand_left_pinky_2
+    - collision_hand_left_pinky_1
+    - collision_hand_left_pinky_0
+    - collision_hand_left_pinky_tip
+    contype: 1
+    conaffinity: ${eval:'1 if ${robot.self_collision} else 0'}
+    condim: 3
+    friction: [1.0, 0.005, 0.0001]
+    disable_other_geoms: true
+  
+  body_mapping:
+    all:
+      - [thumb_MC,      thumb_proximal]
+      - [thumb_PP,      thumb_intermediate]
+      - [thumb_DP,      thumb_distal]
+      - [index_MCP_VL,  index_proximal]
+      - [index_MP,      index_intermediate]
+      - [index_DP,      index_distal]
+      - [middle_MCP_VL, middle_proximal]
+      - [middle_MP,     middle_intermediate]
+      - [middle_DP,     middle_distal]
+      - [ring_MCP_VL,   ring_proximal]
+      - [ring_MP,       ring_intermediate]
+      - [ring_DP,       ring_distal]
+      - [pinky_MCP_VL,  pinky_proximal]
+      - [pinky_MP,      pinky_intermediate]
+      - [pinky_DP,      pinky_distal]
+    level1:
+      thumb:  [thumb_MC,      thumb_proximal]
+      index:  [index_MCP_VL,  index_proximal]
+      middle: [middle_MCP_VL, middle_proximal]
+      ring:   [ring_MCP_VL,   ring_proximal]
+      pinky:  [pinky_MCP_VL,  pinky_proximal]
+    level2:
+      thumb:  [thumb_PP,  thumb_intermediate]
+      index:  [index_MP,  index_intermediate]
+      middle: [middle_MP, middle_intermediate]
+      ring:   [ring_MP,   ring_intermediate]
+      pinky:  [pinky_MP,  pinky_intermediate]
+    level3:
+      thumb:  [thumb_DP,  thumb_distal]
+      index:  [index_DP,  index_distal]
+      middle: [middle_DP, middle_distal]
+      ring:   [ring_DP,   ring_distal]
+      pinky:  [pinky_DP,  pinky_distal]

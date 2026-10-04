@@ -1,0 +1,14 @@
+# @package _global_
+
+curriculum:
+  xfrc_curriculum_adaptive:
+    params:
+      reward_terms:
+        task:
+          - tracking_obj_pcd_match_error_exp
+        imi:
+          - tracking_ref_mano_wrist_trans_error_exp
+          - tracking_ref_mano_wrist_rot_error_exp
+          - tracking_ref_mano_tip_trans_error_exp
+        bc:
+          - tracking_joint_pos_bc_exp

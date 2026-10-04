@@ -1,0 +1,147 @@
+# @package _global_
+
+scene:
+  num_envs: ${num_envs}
+  env_spacing: 0.5     # tabletop scale (hand task)
+
+  terrain:
+    terrain_type: plane                    # "plane" | "generator"
+    terrain_generator: null
+    env_spacing: 2.0
+    max_init_terrain_level: null
+
+    lights:
+      - name: sun
+        body: world
+        mode: fixed
+        type: directional
+        castshadow: true
+        pos: [0.0, 0.0, 1.5]
+        dir: [0.0, 0.0, -1.0]
+        cutoff: 45.0
+        exponent: 10.0
+
+    textures:
+      - name: groundplane
+        type: 2d
+        builtin: checker
+        rgb1: [0.2, 0.3, 0.4]
+        rgb2: [0.1, 0.2, 0.3]
+        width: 300
+        height: 300
+        mark: edge
+        markrgb: [0.8, 0.8, 0.8]
+
+    materials:
+      - name: groundplane
+        rgba: [1.0, 1.0, 1.0, 1.0]
+        texuniform: true
+        texrepeat: [4.0, 4.0]
+        reflectance: 0.2
+        texture: groundplane
+        geom_names_expr: ["terrain$"]
+
+  sensors:
+    - type: contact
+      name: r_fingertip_contact
+      primary:
+        mode: site
+        pattern: ${robot.site_names.contact.right}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_right
+        entity: object_right
+      fields: [found, force]
+      reduce: netforce
+
+    - type: contact
+      name: r_fingertip_penetration
+      primary:
+        mode: site
+        pattern: ${robot.site_names.contact.right}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_right
+        entity: object_right
+      fields: [found, dist]
+      reduce: mindist
+
+    - type: contact
+      name: r_alllink_contact
+      primary:
+        mode: body
+        pattern: ${robot.contact_links.right}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_right
+        entity: object_right
+      fields: [force, torque]
+      reduce: netforce
+
+    - type: contact
+      name: r_alllink_contact_pos
+      primary:
+        mode: body
+        pattern: ${robot.contact_links.right}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_right
+        entity: object_right
+      fields: [found, pos]
+      reduce: mindist
+
+    - type: contact
+      name: l_fingertip_contact
+      primary:
+        mode: site
+        pattern: ${robot.site_names.contact.left}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_left
+        entity: object_left
+      fields: [found, force]
+      reduce: netforce
+
+    - type: contact
+      name: l_fingertip_penetration
+      primary:
+        mode: site
+        pattern: ${robot.site_names.contact.left}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_left
+        entity: object_left
+      fields: [found, dist]
+      reduce: mindist
+
+    - type: contact
+      name: l_alllink_contact
+      primary:
+        mode: body
+        pattern: ${robot.contact_links.left}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_left
+        entity: object_left
+      fields: [force, torque]
+      reduce: netforce
+
+    - type: contact
+      name: l_alllink_contact_pos
+      primary:
+        mode: body
+        pattern: ${robot.contact_links.left}
+        entity: ${robot.entity_name}
+      secondary:
+        mode: body
+        pattern: obj_left
+        entity: object_left
+      fields: [found, pos]
+      reduce: mindist

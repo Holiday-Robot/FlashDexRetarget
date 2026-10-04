@@ -1,0 +1,6 @@
+name: cuacd
+gpus: null    # null: every visible GPU; one process per GPU takes about 20GB VRAM
+threshold: 0.05
+depth: 3
+preprocess_resolution: 128
+max_convex_hull: 32

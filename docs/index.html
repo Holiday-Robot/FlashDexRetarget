@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FlashDexRetarget: Accelerating Dexterous Manipulation Data Generation through Multi-Motion Retargeting</title>
+  <meta name="description" content="FlashDexRetarget retargets whole collections of human hand-object demonstrations to dexterous robot hands with a single reference-conditioned RL policy: 90% success on a 50-motion benchmark with about 100x less training compute than CHORD.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FlashDexRetarget: Accelerating Dexterous Manipulation Data Generation through Multi-Motion Retargeting">
+  <meta property="og:description" content="One policy retargets a whole collection of human hand-object demonstrations to a dexterous robot hand.">
+  <meta property="og:url" content="https://holiday-robot.github.io/FlashDexRetarget/">
+  <meta property="og:image" content="https://holiday-robot.github.io/FlashDexRetarget/images/teaser.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232ea24c'/%3E%3Cpath d='M18 4 8 18h7l-2 10 11-15h-7z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span>Flash</span>DexRetarget</a>
+    <a href="#video">Video</a>
+    <a href="#approach">Approach</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#real-world">Real World</a>
+    <a href="#bibtex">BibTeX</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1><span class="flash">Flash</span>DexRetarget</h1>
+    <p class="subtitle">Accelerating Dexterous Manipulation Data Generation through Multi-Motion Retargeting</p>
+
+    <div class="authors">
+      <span><a href="https://kyungminn.github.io/" target="_blank" rel="noopener">Kyungmin Lee</a><sup>1*</sup></span>
+      <span><a href="https://sibisibi.github.io/" target="_blank" rel="noopener">Sibeen Kim</a><sup>1*</sup></span>
+      <span><a href="https://godnpeter.github.io/" target="_blank" rel="noopener">Dongyoon Hwang</a><sup>1*</sup></span>
+      <span><a href="https://yoonsangoh.github.io/" target="_blank" rel="noopener">Yoonsang Oh</a><sup>1*</sup></span>
+      <span><a href="https://i-am-proto.github.io/" target="_blank" rel="noopener">Donghu Kim</a><sup>2</sup></span>
+      <span><a href="https://leeyngdo.github.io/" target="_blank" rel="noopener">Youngdo Lee</a><sup>2</sup></span>
+      <span><a href="https://anahrendra.github.io/" target="_blank" rel="noopener">I Made Aswin Nahrendra</a><sup>2</sup></span>
+      <span><a href="https://sites.google.com/site/jaegulchoo/" target="_blank" rel="noopener">Jaegul Choo</a><sup>1&dagger;</sup></span>
+      <span><a href="https://joonleesky.github.io/" target="_blank" rel="noopener">Hojoon Lee</a><sup>2&dagger;</sup></span>
+    </div>
+    <div class="affils">
+      <span><sup>1</sup>KAIST AI</span>
+      <span><sup>2</sup>Holiday Robotics</span>
+      <span class="note"><sup>*</sup>Equal contribution &nbsp;&nbsp; <sup>&dagger;</sup>Corresponding author</span>
+    </div>
+
+    <div class="buttons">
+      <a class="btn" href="https://arxiv.org/abs/2610.01849" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.842 0a1 1 0 0 0-.922.608c-.153.369-.044.627.294 1.111l6.919 8.36l-1.023 1.106a1.04 1.04 0 0 0 .003 1.423l1.23 1.313l-5.44 6.444c-.28.3-.453.823-.297 1.199a1.025 1.025 0 0 0 .959.635a.91.91 0 0 0 .689-.34l5.783-6.126l7.49 8.005a.85.85 0 0 0 .684.26a.96.96 0 0 0 .877-.615c.158-.377-.017-.75-.306-1.14L13.73 13.9l1.064-1.13a.963.963 0 0 0 .009-1.316L4.633.464S4.26.01 3.867 0zm0 .272h.017c.218.005.487.272.564.364l.005.006l.005.005l10.17 10.99a.69.69 0 0 1-.008.946l-1.066 1.133l-1.498-1.772l-8.6-10.39c-.328-.472-.352-.619-.26-.841a.73.73 0 0 1 .671-.44Zm14.341 1.57a.88.88 0 0 0-.655.242l-5.696 6.158l1.694 1.832l5.309-6.514c.325-.433.479-.66.325-1.029a1.12 1.12 0 0 0-.977-.689m-7.655 12.282l1.318 1.414l-5.786 6.13a.65.65 0 0 1-.496.26a.75.75 0 0 1-.706-.467c-.112-.269.036-.687.244-.909l.005-.005l.005-.006z"/></svg>
+        arXiv
+      </a>
+      <a class="btn" href="https://github.com/Holiday-Robot/FlashDexRetarget" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Code
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap wide hero-video">
+    <figure>
+      <div class="media-card flat">
+        <video width="1440" height="586" class="loop" muted loop playsinline preload="none" poster="images/results_grid_poster.jpg"
+               data-src="videos/results_grid.mp4" aria-label="Rollouts of a single FlashDexRetarget policy"></video>
+      </div>
+      <figcaption style="text-align:center">
+        <b>One policy, many motions.</b> Successful rollouts of a <em>single</em> FlashDexRetarget policy on our 50-motion benchmark
+        (XHand, single- and two-object demonstrations from TACO, OakInk2, and HOT3D).
+      </figcaption>
+    </figure>
+  </div>
+</header>
+
+<section class="alt">
+  <div class="wrap">
+    <p class="tldr">
+      FlashDexRetarget turns a <b>whole collection</b> of human hand&ndash;object demonstrations into physically grounded
+      robot trajectories with <b>one reference-conditioned RL policy</b>, instead of optimizing every demonstration separately.
+    </p>
+    <div class="stats">
+      <div class="stat"><div class="num">90%</div><div class="lbl">retargeting success on the 50-motion benchmark (XHand) in 29 GPU-hours</div></div>
+      <div class="stat"><div class="num">~100&times;</div><div class="lbl">less training compute than CHORD (XHand: 29 vs. 2,847 GPU-hours), with 44 pp higher success</div></div>
+      <div class="stat"><div class="num">600+</div><div class="lbl">of 1,000 motions converted by one policy trained on the whole collection, within 60 GPU-hours</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="video">
+  <div class="wrap">
+    <h2>Video</h2>
+    <div class="video-frame">
+      <video controls playsinline preload="metadata" poster="images/video_poster.jpg">
+        <source src="videos/flashdexretarget_supp.mp4?v=2" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</section>
+
+<section id="approach">
+  <div class="wrap">
+    <h2>Retarget a Whole Collection with One Policy</h2>
+    <p class="lead">
+      Physics-based retargeting makes a human demonstration executable by a robot hand: the robot must reproduce the
+      demonstrated object motion through its own contacts, under its own dynamics.
+    </p>
+
+    <div class="clips c3" data-sync>
+      <div class="clip">
+        <video width="580" height="470" class="loop" muted loop playsinline preload="none" data-src="videos/problem_human.mp4"></video>
+        <div class="cap"><b>Human demonstration</b></div>
+      </div>
+      <div class="clip">
+        <video width="580" height="470" class="loop" muted loop playsinline preload="none" data-src="videos/problem_reference.mp4"></video>
+        <div class="cap"><b>Reference motion</b></div>
+      </div>
+      <div class="clip">
+        <video width="580" height="470" class="loop" muted loop playsinline preload="none" data-src="videos/problem_robot.mp4"></video>
+        <div class="cap"><b>Retargeted robot trajectory</b></div>
+      </div>
+    </div>
+
+    <p style="margin-top:30px">
+      Existing sampling-based and RL-based retargeting methods optimize each demonstration independently, so their cost
+      grows linearly with the number of demonstrations. FlashDexRetarget instead studies <em>multi-reference tracking</em>:
+      a single reference-conditioned policy is trained jointly across all reference motions, amortizing training over the
+      whole dataset, and every successful rollout is stored as robot data.
+    </p>
+    <figure style="margin-top:18px">
+      <div class="figure-img"><img src="images/teaser.png" alt="FlashDexRetarget at a glance: N reference motions, one policy, retargeted data, and success rate versus GPU hours" loading="lazy"></div>
+      <figcaption>
+        <b>FlashDexRetarget at a glance.</b> Left and right hand policies are jointly trained across reference motions,
+        avoiding repeated optimization for individual demonstrations, and successful rollouts are stored as robot data.
+        The right plot shows cumulative conversion success rate versus total GPU hours on a logarithmic scale.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="alt" id="method">
+  <div class="wrap">
+    <h2>Method</h2>
+    <p class="lead">
+      Reference trajectories are sampled from the dataset and assigned to parallel simulation environments. At every step
+      the policy sees the current simulated state together with the next reference state and predicts the robot action.
+    </p>
+    <figure>
+      <div class="figure-img"><img src="images/overview.png" alt="Overview of FlashDexRetarget: observations, hand-wise agents, and rewards" loading="lazy"></div>
+      <figcaption>
+        <b>Overview.</b> (1) Observations combine robot states, current and reference object point clouds, local
+        signed-distance features, and an encoding of future reference motion. (2) Left and right hand actor&ndash;critic
+        pairs are trained with FlashSAC and jointly control the simulated interaction, each sharing its parameters across
+        all reference motions. (3) Object surface alignment and reference-conditioned fingertip proximity provide geometric
+        learning signals, complemented by hand tracking and regularization.
+      </figcaption>
+    </figure>
+
+    <h3 style="margin-top:46px">Interaction-aware observations</h3>
+
+    <div class="component">
+      <div>
+        <span class="tag">Observation</span>
+        <h4>Object point clouds</h4>
+        <p>
+          One policy has to handle many objects, so it observes their shape instead of memorizing one: 128 uniformly
+          sampled surface points for the current simulated pose and for the next reference pose, expressed in the
+          wrist-local frame.
+        </p>
+      </div>
+      <div class="clips c2" data-sync>
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/obs_pcd_current.mp4"></video>
+          <div class="cap"><b>Current cloud</b>simulated object</div>
+        </div>
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/obs_pcd_reference.mp4"></video>
+          <div class="cap"><b>Reference cloud</b>from the demonstration</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="component">
+      <div>
+        <span class="tag">Observation</span>
+        <h4>Hand&ndash;object distance features</h4>
+        <p>
+          To describe the local hand&ndash;object relationship, including before contact, we query a signed distance field
+          for the distance and surface normal from each fingertip and the wrist to the object, in the wrist frame.
+        </p>
+      </div>
+      <div class="clip">
+        <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/obs_sdf.mp4"></video>
+        <div class="cap"><b>Fingertip-to-surface vectors</b>during a rollout</div>
+      </div>
+    </div>
+
+    <div class="component">
+      <div>
+        <span class="tag">Observation</span>
+        <h4>Future reference conditioning</h4>
+        <p>
+          A single next frame cannot tell where the motion is going. We encode the reference hand and object states from
+          \(t+1\) to \(t+K\) (\(K = 10\)), relative to the current wrist frame, into a 128-d latent with a temporal encoder.
+        </p>
+      </div>
+      <div class="clip">
+        <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/obs_future.mp4"></video>
+        <div class="cap"><b>Next 10 reference frames</b>reference hand &amp; object poses</div>
+      </div>
+    </div>
+
+    <h3>Geometric tracking rewards</h3>
+
+    <div class="component">
+      <div>
+        <span class="tag">Reward</span>
+        <h4>Object point-cloud matching</h4>
+        <p>
+          Instead of weighting translation and rotation errors by hand, we compare corresponding surface points and
+          average the \(k = 3\) largest errors, a single metric that captures both. For a uniform reward signal across
+          object sizes, the object-frame surface points are first rescaled to a common radius \(\rho = 0.058\) m, so that a
+          30&deg; rotation yields a 3 cm error, matching the success thresholds:
+        </p>
+        <div class="eq">$$e^{\text{obj}}_t = \frac{1}{k}\sum_{m \in \mathcal{I}^{(k)}_t} \big\lVert \tilde{\mathbf{P}}^{\text{cur}}_{t+1,m} - \tilde{\mathbf{P}}^{\text{ref}}_{i,t+1,m} \big\rVert_2, \qquad r^{\text{obj}}_t = \exp\!\big(-e^{\text{obj}}_t / \sigma_{\text{obj}}\big), \qquad \tilde{\mathbf{p}}_m = \rho\,\frac{\mathbf{p}_m}{\max_n \lVert \mathbf{p}_n \rVert_2}$$</div>
+        <p class="muted" style="font-size:15px">with \(\sigma_{\text{obj}} = 0.1\) m.</p>
+      </div>
+      <div class="clips c2">
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/rew_pcd_pairs.mp4"></video>
+          <div class="cap"><b>Worst-3 point pairs</b>current vs. reference</div>
+        </div>
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/rew_pcd_rollout.mp4"></video>
+          <div class="cap"><b>During a rollout</b>point-cloud matching</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="component">
+      <div>
+        <span class="tag">Reward</span>
+        <h4>Reference distance matching</h4>
+        <p>
+          Reconstructed contacts are noisy: fingers float above the object or sink into it, so binary contact labels are
+          unreliable. Instead, each robot fingertip should be at least as close to the object as the human fingertip was:
+        </p>
+        <div class="eq">$$\varepsilon^{(f)}_t = \max\!\big(0,\; d^{(f)}_t - d^{\text{ref},(f)}_t\big), \qquad r^{\text{int}}_t = \frac{1}{5}\sum_{f=1}^{5} \exp\!\big(-\varepsilon^{(f)}_t / \sigma_{\text{int}}\big)$$</div>
+        <p class="muted" style="font-size:15px">with \(\sigma_{\text{int}} = 0.01\) m. A hand-tracking term and regularization complete the per-hand reward.</p>
+      </div>
+      <div class="clips c2" data-sync>
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/rew_dist_reference.mp4"></video>
+          <div class="cap"><b>Reference distances</b>human fingertips</div>
+        </div>
+        <div class="clip">
+          <video width="480" height="360" class="loop" muted loop playsinline preload="none" data-src="videos/rew_dist_robot.mp4"></video>
+          <div class="cap"><b>Robot distances</b>robot fingertips (SDF)</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Learning</h3>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">Architecture</span>
+        <h4>Per-hand actor&ndash;critic</h4>
+        <p>
+          With one shared critic, the rewards of both hands collapse into a single scalar. Each hand therefore gets its own
+          actor and critic, trained with its hand-specific reward. Both actors observe the full bimanual state but control
+          only their own hand, staying physically coupled through the simulation.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">RL algorithm</span>
+        <h4>Scaled off-policy learning</h4>
+        <p>
+          Many references share one policy, so experience is too valuable to discard. We adopt the off-policy algorithm
+          FlashSAC and scale it to the broader multi-reference state distribution.
+        </p>
+        <div class="pill-row">
+          <span class="pill">Replay buffer 10M &rarr; 50M</span>
+          <span class="pill">Critic width 256 &rarr; 1024</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <h2>Results</h2>
+
+    <h3>Higher success at a fraction of the compute</h3>
+    <p>
+      We compare against Do as I Do, DexMachina, and CHORD on 50 reference motions (25 single-object from HOT3D and 25
+      two-object from TACO and OakInk2), retargeted to XHand and Sharpa Wave Hand. All methods are evaluated in IsaacSim on
+      NVIDIA RTX 3090 GPUs. Each single-reference run stops once a successful rollout is found, and GPU-hours are summed over
+      all motions, including the full cost of unsuccessful runs; FlashDexRetarget trains one policy for 300M environment steps
+      on XHand and 400M on Sharpa Wave Hand, which has a higher-dimensional control space.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th><th>Motion</th><th>SR<sub>SPIDER</sub> &uarr;</th><th>SR<sub>MT-Obj</sub> &uarr;</th>
+            <th>SR<sub>MT</sub> &uarr;</th><th>MOPE (mm) &darr;</th><th>MORE (rad) &darr;</th><th>GPU-h &darr;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="group"><td colspan="8">(a) XHand</td></tr>
+          <tr><td>Do as I Do</td><td>Single</td><td>0.36</td><td>0.04</td><td>0.00</td><td>47.32</td><td>0.28</td><td>66</td></tr>
+          <tr><td>DexMachina</td><td>Single</td><td>0.48</td><td>0.32</td><td>0.12</td><td>37.49</td><td>0.29</td><td>447</td></tr>
+          <tr><td>CHORD</td><td>Single</td><td>0.46</td><td>0.02</td><td>0.00</td><td>55.70</td><td><b>0.16</b></td><td>2,847</td></tr>
+          <tr class="ours"><td>FlashDexRetarget</td><td>Multi</td><td>0.90</td><td>0.86</td><td>0.86</td><td>10.95</td><td style="font-weight:400">0.25</td><td>29</td></tr>
+          <tr class="group"><td colspan="8">(b) Sharpa Wave Hand</td></tr>
+          <tr><td>Do as I Do</td><td>Single</td><td>0.64</td><td>0.10</td><td>0.10</td><td>58.33</td><td>0.24</td><td>62</td></tr>
+          <tr><td>CHORD</td><td>Single</td><td>0.50</td><td>0.22</td><td>0.00</td><td>60.07</td><td><b>0.19</b></td><td>3,314</td></tr>
+          <tr class="ours"><td>FlashDexRetarget</td><td>Multi</td><td>0.86</td><td>0.80</td><td>0.80</td><td>16.45</td><td style="font-weight:400">0.32</td><td>44</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="metric-note">
+      SR<sub>SPIDER</sub>: object position / rotation error within 10 cm / 0.5 rad, averaged over the objects of the active hands.
+      SR<sub>MT-Obj</sub>: object within 3 cm / 30&deg;. SR<sub>MT</sub>: additionally fingertip and hand-joint position
+      errors within 6 cm and 8 cm. MOPE / MORE: mean object position / rotation error over trajectories that satisfy SR<sub>SPIDER</sub>.
+    </p>
+
+    <h3>What makes multi-reference retargeting work</h3>
+    <figure>
+      <div class="figure-img"><img src="images/ablation.png" alt="Ablation curves: observation, reward, architecture, RL algorithm" loading="lazy"></div>
+      <figcaption>
+        Cumulative number of successfully converted reference motions (out of 50) over 300M environment steps; a reference
+        counts once a rollout satisfies SR<sub>MT-Obj</sub>.
+      </figcaption>
+    </figure>
+    <ul class="findings">
+      <li><b>Observation.</b> Encoding future reference frames accumulates successful trajectories faster and converts more references than next-frame conditioning alone.</li>
+      <li><b>Reward.</b> Removing point-cloud matching or the interaction reward (with their observations) slows learning and lowers success, point-cloud matching more so; removing both hurts most.</li>
+      <li><b>Architecture.</b> Separate left- and right-hand actor&ndash;critic pairs improve both learning speed and final success over a unified actor&ndash;critic.</li>
+      <li><b>RL algorithm.</b> PPO stays near zero within 300M steps, while default FlashSAC converts about 34%; a 50M replay buffer raises this to about 60%, and a wider critic on top reaches 86%.</li>
+    </ul>
+
+    <h3>Scaling to larger reference collections</h3>
+    <div class="split">
+      <figure>
+        <div class="figure-img"><img src="images/scaling.png" alt="Cumulative successful clips over GPU-hours for 200, 500 and 1,000 training motions" loading="lazy"></div>
+      </figure>
+      <div>
+        <p>
+          One shared policy is trained on collections of 200, 500, and 1,000 motions (600M environment steps each). Over
+          the first 60 GPU-hours, larger collections yield more successfully retargeted motions for the same compute,
+          and the gap grows as training continues.
+        </p>
+        <p>
+          Sharing training across more references therefore increases the data-generation yield of a single training run:
+          more demonstrations in, more robot data out.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="real-world">
+  <div class="wrap">
+    <h2>Real-World Replay</h2>
+    <p class="lead">
+      We retarget real-world-captured human demonstrations and replay the successful simulated trajectories on a robot arm
+      with an XHand. This checks that the retargeted motions remain executable under real contact dynamics; it is not a
+      closed-loop deployed policy.
+    </p>
+
+    <div class="real-head">
+      <div class="spacer"></div>
+      <div>Captured human reference</div>
+      <div>Retargeted in simulation</div>
+      <div>Real robot (4&times; speed)</div>
+    </div>
+    <div class="real-row" data-sync>
+      <div class="task">Wipe the board</div>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_wipe_reference.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_wipe_sim.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_wipe_robot.mp4"></video>
+    </div>
+    <div class="real-row" data-sync>
+      <div class="task">Pour into the pan</div>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_pour_reference.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_pour_sim.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_pour_robot.mp4"></video>
+    </div>
+    <div class="real-row" data-sync>
+      <div class="task">Close the lid</div>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_lid_reference.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_lid_sim.mp4"></video>
+      <video width="640" height="640" class="loop" muted loop playsinline preload="none" data-src="videos/real_lid_robot.mp4"></video>
+    </div>
+  </div>
+</section>
+
+<section id="bibtex">
+  <div class="wrap">
+    <h2>BibTeX</h2>
+    <div class="bibtex">
+      <button class="copy" id="copy-bib" type="button">Copy</button>
+<pre id="bibtex-text">@article{lee2026flashdexretarget,
+  title   = {FlashDexRetarget: Accelerating Dexterous Manipulation Data Generation through Multi-Motion Retargeting},
+  author  = {Lee, Kyungmin and Kim, Sibeen and Hwang, Dongyoon and Oh, Yoonsang and Kim, Donghu and
+             Lee, Youngdo and Nahrendra, I Made Aswin and Choo, Jaegul and Lee, Hojoon},
+  journal = {arXiv preprint arXiv:2610.01849},
+  year    = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    FlashDexRetarget &middot; KAIST AI &amp; Holiday Robotics
+  </div>
+</footer>
+
+<script>
+// Looping clips load when they approach the viewport and pause when they leave it.
+(function () {
+  var clips = Array.prototype.slice.call(document.querySelectorAll("video.loop"));
+
+  function load(v) {
+    if (v.dataset.loaded) return;
+    v.src = v.dataset.src;
+    v.dataset.loaded = "1";
+  }
+  function play(v) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    clips.forEach(function (v) { load(v); play(v); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) { load(v); play(v); }
+        else if (v.dataset.loaded) v.pause();
+      });
+    }, { rootMargin: "300px 0px" });
+    clips.forEach(function (v) { io.observe(v); });
+  }
+
+  // Clips in the same row restart together so side-by-side comparisons stay in sync.
+  document.querySelectorAll("[data-sync]").forEach(function (row) {
+    var vids = row.querySelectorAll("video");
+    var lead = vids[0];
+    if (!lead) return;
+    lead.addEventListener("seeked", function () {
+      if (lead.currentTime < 0.2) vids.forEach(function (v) { if (v !== lead) v.currentTime = 0; });
+    });
+  });
+
+  var btn = document.getElementById("copy-bib");
+  if (btn) {
+    btn.addEventListener("click", function () {
+      var text = document.getElementById("bibtex-text").innerText;
+      var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy"; }, 1600); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

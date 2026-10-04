@@ -1,0 +1,46 @@
+# @package _global_
+
+eval:
+  interval: 20_000_000
+  num_per_motion: 1
+  save_success_data: true
+
+  env:
+    clear_terminations:     true
+    clear_curriculum:       true
+    disable_obs_corruption: true
+    disable_object_pin:     true
+
+  command:
+    sampling_mode:          "start"
+    noise_to_initial_level: 0.0
+    start_frame:            0
+
+  command_name: ${commands.name}
+
+  success_criterion: obj   # obj | full (full adds the finger criterion)
+
+  stop_when_all_solved: true
+
+  callbacks:
+    - _target_: evaluation.callbacks.motion_tracking_eval_setup.MotionTrackingEvalSetup
+      command_name: ${commands.name}
+      num_per_motion: ${eval.num_per_motion}
+      start_frame: ${eval.command.start_frame}
+
+    - _target_: evaluation.callbacks.tracking_performance.TrackingPerformance
+      grace_steps: 15
+      threshold_ks: [0.5, 1.0, 2.0]
+      thresholds:
+        obj_trans:   0.03
+        tip_trans:   0.06
+        obj_rot_deg: 30.0
+        joint_trans: 0.08
+      command_name: ${commands.name}
+
+    - _target_: evaluation.callbacks.contact_performance.ContactPerformance
+      grace_steps: 15
+      command_name: ${commands.name}
+
+    - _target_: evaluation.callbacks.rollout_record.RolloutRecord
+      command_name: ${commands.name}

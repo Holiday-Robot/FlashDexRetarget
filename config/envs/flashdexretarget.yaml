@@ -1,0 +1,20 @@
+# @package _global_
+
+num_envs: 2048
+decimation: 4             # x sim.dt 1/240 (simulator/isaacsim) = 60 Hz control
+episode_length_s: 20.0
+seed: null
+
+defaults:
+  - scene: base
+  - events: no_domain_rand
+  - robot: xhand_bimanual
+  - obs: flashdexretarget
+  - actions: flashdexretarget           # NEW: residual PD, wrist scale 0.1
+  - rewards: flashdexretarget
+  - termination: flashdexretarget       # NEW: object_fell_off + cum-task-rew early reset (-ert 0.6)
+  - commands: motion_tracking     # reuse (carries the xfrc object-pin assist)
+  - simulator: isaacsim
+  - curriculum: flashdexretarget  # object-assist decay
+  - _self_
+

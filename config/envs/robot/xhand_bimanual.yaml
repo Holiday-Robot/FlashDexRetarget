@@ -1,0 +1,326 @@
+# @package _global_
+
+robot:
+  entity_name: robot
+  self_collision: true
+
+  xml_path: assets/robot/xhand/bimanual.xml
+
+  body_names:
+    fingers: [thumb, index, middle, ring, pinky]
+
+  site_names:
+    palm:
+      right: right_palm
+      left: left_palm
+    tip:
+      right:
+        - track_hand_right_thumb_tip
+        - track_hand_right_index_tip
+        - track_hand_right_middle_tip
+        - track_hand_right_ring_tip
+        - track_hand_right_pinky_tip
+      left:
+        - track_hand_left_thumb_tip
+        - track_hand_left_index_tip
+        - track_hand_left_middle_tip
+        - track_hand_left_ring_tip
+        - track_hand_left_pinky_tip
+    contact:
+      right:
+        - contact_right_thumb_tip
+        - contact_right_index_tip
+        - contact_right_middle_tip
+        - contact_right_ring_tip
+        - contact_right_pinky_tip
+      left:
+        - contact_left_thumb_tip
+        - contact_left_index_tip
+        - contact_left_middle_tip
+        - contact_left_ring_tip
+        - contact_left_pinky_tip
+
+  contact_links:
+    right:
+      - R_forearm_rot_y_link
+      - right_hand_thumb_bend_link
+      - right_hand_thumb_rota_link1
+      - right_hand_thumb_rota_link2
+      - right_hand_index_bend_link
+      - right_hand_index_rota_link1
+      - right_hand_index_rota_link2
+      - right_hand_mid_link1
+      - right_hand_mid_link2
+      - right_hand_ring_link1
+      - right_hand_ring_link2
+      - right_hand_pinky_link1
+      - right_hand_pinky_link2
+    left:
+      - L_forearm_rot_y_link
+      - left_hand_thumb_bend_link
+      - left_hand_thumb_rota_link1
+      - left_hand_thumb_rota_link2
+      - left_hand_index_bend_link
+      - left_hand_index_rota_link1
+      - left_hand_index_rota_link2
+      - left_hand_mid_link1
+      - left_hand_mid_link2
+      - left_hand_ring_link1
+      - left_hand_ring_link2
+      - left_hand_pinky_link1
+      - left_hand_pinky_link2
+
+  init_state:
+    pos:     [0.0, 0.0, 0.0]
+    rot:     [1.0, 0.0, 0.0, 0.0]
+    lin_vel: [0.0, 0.0, 0.0]
+    ang_vel: [0.0, 0.0, 0.0]
+
+    joint_pos:
+      # Right forearm floating base (6 DoF)
+      R_forearm_pos_x_joint: 0.0
+      R_forearm_pos_y_joint: 0.0
+      R_forearm_pos_z_joint: 0.0
+      R_forearm_rot_z_joint: 0.0
+      R_forearm_rot_x_joint: 0.0
+      R_forearm_rot_y_joint: 0.0
+      # Right fingers (12)
+      right_hand_thumb_bend_joint:  0.0
+      right_hand_thumb_rota_joint1: 0.0
+      right_hand_thumb_rota_joint2: 0.0
+      right_hand_index_bend_joint: 0.0
+      right_hand_index_joint1:     0.0
+      right_hand_index_joint2:     0.0
+      right_hand_mid_joint1: 0.0
+      right_hand_mid_joint2: 0.0
+      right_hand_ring_joint1: 0.0
+      right_hand_ring_joint2: 0.0
+      right_hand_pinky_joint1: 0.0
+      right_hand_pinky_joint2: 0.0
+      # Left forearm floating base (6 DoF)
+      L_forearm_pos_x_joint: 0.0
+      L_forearm_pos_y_joint: 0.0
+      L_forearm_pos_z_joint: 0.0
+      L_forearm_rot_z_joint: 0.0
+      L_forearm_rot_x_joint: 0.0
+      L_forearm_rot_y_joint: 0.0
+      # Left fingers (12)
+      left_hand_thumb_bend_joint:  0.0
+      left_hand_thumb_rota_joint1: 0.0
+      left_hand_thumb_rota_joint2: 0.0
+      left_hand_index_bend_joint: 0.0
+      left_hand_index_joint1:     0.0
+      left_hand_index_joint2:     0.0
+      left_hand_mid_joint1: 0.0
+      left_hand_mid_joint2: 0.0
+      left_hand_ring_joint1: 0.0
+      left_hand_ring_joint2: 0.0
+      left_hand_pinky_joint1: 0.0
+      left_hand_pinky_joint2: 0.0
+
+    joint_vel:
+      R_forearm_pos_x_joint: 0.0
+      R_forearm_pos_y_joint: 0.0
+      R_forearm_pos_z_joint: 0.0
+      R_forearm_rot_z_joint: 0.0
+      R_forearm_rot_x_joint: 0.0
+      R_forearm_rot_y_joint: 0.0
+      right_hand_thumb_bend_joint:  0.0
+      right_hand_thumb_rota_joint1: 0.0
+      right_hand_thumb_rota_joint2: 0.0
+      right_hand_index_bend_joint: 0.0
+      right_hand_index_joint1:     0.0
+      right_hand_index_joint2:     0.0
+      right_hand_mid_joint1: 0.0
+      right_hand_mid_joint2: 0.0
+      right_hand_ring_joint1: 0.0
+      right_hand_ring_joint2: 0.0
+      right_hand_pinky_joint1: 0.0
+      right_hand_pinky_joint2: 0.0
+      L_forearm_pos_x_joint: 0.0
+      L_forearm_pos_y_joint: 0.0
+      L_forearm_pos_z_joint: 0.0
+      L_forearm_rot_z_joint: 0.0
+      L_forearm_rot_x_joint: 0.0
+      L_forearm_rot_y_joint: 0.0
+      left_hand_thumb_bend_joint:  0.0
+      left_hand_thumb_rota_joint1: 0.0
+      left_hand_thumb_rota_joint2: 0.0
+      left_hand_index_bend_joint: 0.0
+      left_hand_index_joint1:     0.0
+      left_hand_index_joint2:     0.0
+      left_hand_mid_joint1: 0.0
+      left_hand_mid_joint2: 0.0
+      left_hand_ring_joint1: 0.0
+      left_hand_ring_joint2: 0.0
+      left_hand_pinky_joint1: 0.0
+      left_hand_pinky_joint2: 0.0
+
+  articulation:
+    actuators:
+      - target_names_expr:
+          # Right forearm floating base (6 DoF)
+          - "R_forearm_pos_x_joint"
+          - "R_forearm_pos_y_joint"
+          - "R_forearm_pos_z_joint"
+          - "R_forearm_rot_z_joint"
+          - "R_forearm_rot_x_joint"
+          - "R_forearm_rot_y_joint"
+          # Right fingers (12)
+          - "right_hand_thumb_bend_joint"
+          - "right_hand_thumb_rota_joint1"
+          - "right_hand_thumb_rota_joint2"
+          - "right_hand_index_bend_joint"
+          - "right_hand_index_joint1"
+          - "right_hand_index_joint2"
+          - "right_hand_mid_joint1"
+          - "right_hand_mid_joint2"
+          - "right_hand_ring_joint1"
+          - "right_hand_ring_joint2"
+          - "right_hand_pinky_joint1"
+          - "right_hand_pinky_joint2"
+          # Left forearm floating base (6 DoF)
+          - "L_forearm_pos_x_joint"
+          - "L_forearm_pos_y_joint"
+          - "L_forearm_pos_z_joint"
+          - "L_forearm_rot_z_joint"
+          - "L_forearm_rot_x_joint"
+          - "L_forearm_rot_y_joint"
+          # Left fingers (12)
+          - "left_hand_thumb_bend_joint"
+          - "left_hand_thumb_rota_joint1"
+          - "left_hand_thumb_rota_joint2"
+          - "left_hand_index_bend_joint"
+          - "left_hand_index_joint1"
+          - "left_hand_index_joint2"
+          - "left_hand_mid_joint1"
+          - "left_hand_mid_joint2"
+          - "left_hand_ring_joint1"
+          - "left_hand_ring_joint2"
+          - "left_hand_pinky_joint1"
+          - "left_hand_pinky_joint2"
+
+  joint_names:
+    wrist_trans:
+      - "R_forearm_pos_x_joint"
+      - "R_forearm_pos_y_joint"
+      - "R_forearm_pos_z_joint"
+      - "L_forearm_pos_x_joint"
+      - "L_forearm_pos_y_joint"
+      - "L_forearm_pos_z_joint"
+    wrist_rot:
+      - "R_forearm_rot_z_joint"
+      - "R_forearm_rot_x_joint"
+      - "R_forearm_rot_y_joint"
+      - "L_forearm_rot_z_joint"
+      - "L_forearm_rot_x_joint"
+      - "L_forearm_rot_y_joint"
+    finger:
+      - "right_hand_thumb_bend_joint"
+      - "right_hand_thumb_rota_joint1"
+      - "right_hand_thumb_rota_joint2"
+      - "right_hand_index_bend_joint"
+      - "right_hand_index_joint1"
+      - "right_hand_index_joint2"
+      - "right_hand_mid_joint1"
+      - "right_hand_mid_joint2"
+      - "right_hand_ring_joint1"
+      - "right_hand_ring_joint2"
+      - "right_hand_pinky_joint1"
+      - "right_hand_pinky_joint2"
+      - "left_hand_thumb_bend_joint"
+      - "left_hand_thumb_rota_joint1"
+      - "left_hand_thumb_rota_joint2"
+      - "left_hand_index_bend_joint"
+      - "left_hand_index_joint1"
+      - "left_hand_index_joint2"
+      - "left_hand_mid_joint1"
+      - "left_hand_mid_joint2"
+      - "left_hand_ring_joint1"
+      - "left_hand_ring_joint2"
+      - "left_hand_pinky_joint1"
+      - "left_hand_pinky_joint2"
+
+  collisions:
+    - geom_names_expr:
+        # Right palm (1)
+        - "collision_hand_right_palm_0"
+        # Right thumb (4: 3 phalanges + tip)
+        - "collision_hand_right_thumb_0"
+        - "collision_hand_right_thumb_1"
+        - "collision_hand_right_thumb_2"
+        - "collision_hand_right_thumb_tip"
+        # Right index (4). index_2 lives on right_hand_index_bend_link so the
+        # all-link sensor/reward sees it, not a 0 slot.
+        - "collision_hand_right_index_0"
+        - "collision_hand_right_index_1"
+        - "collision_hand_right_index_2"
+        - "collision_hand_right_index_tip"
+        # Right middle (3)
+        - "collision_hand_right_middle_0"
+        - "collision_hand_right_middle_1"
+        - "collision_hand_right_middle_tip"
+        # Right ring (3)
+        - "collision_hand_right_ring_0"
+        - "collision_hand_right_ring_1"
+        - "collision_hand_right_ring_tip"
+        # Right pinky (3)
+        - "collision_hand_right_pinky_0"
+        - "collision_hand_right_pinky_1"
+        - "collision_hand_right_pinky_tip"
+        # Left palm (1)
+        - "collision_hand_left_palm_0"
+        # Left thumb (4)
+        - "collision_hand_left_thumb_0"
+        - "collision_hand_left_thumb_1"
+        - "collision_hand_left_thumb_2"
+        - "collision_hand_left_thumb_tip"
+        # Left index (4)
+        - "collision_hand_left_index_0"
+        - "collision_hand_left_index_1"
+        - "collision_hand_left_index_2"
+        - "collision_hand_left_index_tip"
+        # Left middle (3)
+        - "collision_hand_left_middle_0"
+        - "collision_hand_left_middle_1"
+        - "collision_hand_left_middle_tip"
+        # Left ring (3)
+        - "collision_hand_left_ring_0"
+        - "collision_hand_left_ring_1"
+        - "collision_hand_left_ring_tip"
+        # Left pinky (3)
+        - "collision_hand_left_pinky_0"
+        - "collision_hand_left_pinky_1"
+        - "collision_hand_left_pinky_tip"
+      contype: 1
+      conaffinity: ${eval:'1 if ${robot.self_collision} else 0'}
+      condim: 3
+      friction: [1.0, 0.005, 0.0001]
+      disable_other_geoms: true
+
+  body_mapping:
+    all:
+      - [hand_thumb_bend_link,  thumb_proximal]
+      - [hand_thumb_rota_link1, thumb_intermediate]
+      - [hand_thumb_rota_link2, thumb_distal]
+      - [hand_index_bend_link,  index_proximal]
+      - [hand_index_rota_link1, index_proximal]
+      - [hand_index_rota_link2, index_distal]
+      - [hand_mid_link1,        middle_proximal]
+      - [hand_mid_link2,        middle_distal]
+      - [hand_ring_link1,       ring_proximal]
+      - [hand_ring_link2,       ring_distal]
+      - [hand_pinky_link1,      pinky_proximal]
+      - [hand_pinky_link2,      pinky_distal]
+    level1:
+      thumb:  [hand_thumb_bend_link,  thumb_proximal]
+      index:  [hand_index_bend_link,  index_proximal]
+      middle: [hand_mid_link1,        middle_proximal]
+      ring:   [hand_ring_link1,       ring_proximal]
+      pinky:  [hand_pinky_link1,      pinky_proximal]
+    level2:
+      thumb:  [hand_thumb_rota_link2, thumb_distal]
+      index:  [hand_index_rota_link2, index_distal]
+      middle: [hand_mid_link2,        middle_distal]
+      ring:   [hand_ring_link2,       ring_distal]
+      pinky:  [hand_pinky_link2,      pinky_distal]

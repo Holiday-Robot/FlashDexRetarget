@@ -1,0 +1,26 @@
+# @package _global_
+
+sim:
+  backend: isaacsim
+  dt: 0.0041666667
+  robot_gravcomp: 0.0   # fraction of robot link weight lifted at the COM (MJCF uses 0.8)
+
+  physx:
+    solver_position_iteration_count: 8
+    solver_velocity_iteration_count: 0
+    bounce_threshold_velocity: 0.2
+    friction: 2.0
+    object_friction: 2.0
+    # max: hand/disk-object friction stays at `friction`, object_friction acts on object-object only
+    nonobject_friction_combine_mode: average
+    disk_friction: null   # null = support disks share the object material
+    contact_offset: 0.005
+    rest_offset: 0.0
+    max_depenetration_velocity: 1.0
+    max_contact_impulse: 1000.0
+    compliant_contact_stiffness: 0.0 
+    compliant_contact_damping: 0.0
+    gpu_max_num_partitions: 8
+    gpu_found_lost_pairs_capacity: 16777216
+    gpu_total_aggregate_pairs_capacity: 16777216
+    gpu_max_rigid_patch_count: 1048576

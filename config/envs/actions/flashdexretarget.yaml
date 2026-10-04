@@ -1,0 +1,28 @@
+# @package _global_
+
+actions:
+  name: "residual"
+  _target_: "envs.actions.residual.ResidualActionCfg"
+
+  entity_name: ${robot.entity_name}
+  command_name: ${commands.name}
+
+  action_scale: 1.0
+  action_offset: 0.0
+  clip:
+    ".*": [-1.0, 1.0]
+
+  actuator_names:
+    wrist_trans: ${robot.joint_names.wrist_trans}
+    wrist_rot: ${robot.joint_names.wrist_rot}
+    finger: ${robot.joint_names.finger}
+
+  # ref + a * scale per group; null = no residual, a maps onto the joint range.
+  residual_scale:
+    wrist_trans: 0.1
+    wrist_rot: 1.0
+    finger: null
+
+  lpf:
+    enable: true
+    cutoff_hz: {wrist_trans: 5.0, wrist_rot: 5.0, finger: null}

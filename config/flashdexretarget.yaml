@@ -1,0 +1,10 @@
+device: cuda:0
+seed: 42
+headless: true
+
+defaults:
+  - envs: flashdexretarget
+  - logger: wandb
+  - eval: motion_tracking
+  - runner: flashsac
+  - _self_

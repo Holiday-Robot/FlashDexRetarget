@@ -1,0 +1,90 @@
+# @package _global_
+
+defaults:
+  - base
+  - _self_
+
+algorithm: flashsac
+gamma: 0.98
+n_step: 5
+per_hand_actor_critic: true
+updates_per_interaction_step: 2
+
+runner:
+  agent:
+    class_name: agents.flashsac.FlashSACAgent
+    seed: ${seed}
+    device_type: "cuda"
+
+    buffer_max_length: 50_000_000
+    buffer_min_length: 100_000
+    buffer_device_type: "cuda"
+    sample_batch_size: 4096
+    buffer_obs_dtype: float16
+    buffer_optimize_memory_usage: true
+    buffer_compact_obs: true
+    buffer_action_dtype: null
+
+    normalize_reward: true
+    normalized_G_max: 5.0
+
+    asymmetric_observation: true
+
+    learning_rate_init: 3e-4
+    learning_rate_peak: 3e-4
+    learning_rate_end: 1.5e-4
+    learning_rate_warmup_rate: 1e-6
+    learning_rate_warmup_step: ${eval:'int(${runner.agent.learning_rate_warmup_rate} * ${num_env_steps} / ${num_train_envs} * ${updates_per_interaction_step})'}
+    learning_rate_decay_rate: 1.0
+    learning_rate_decay_step: ${eval:'int(${runner.agent.learning_rate_decay_rate} * ${num_env_steps} / ${num_train_envs} * ${updates_per_interaction_step})'}
+
+    actor_num_blocks: 2
+    actor_hidden_dim: 128
+    actor_bc_alpha: 0.0
+    actor_noise_zeta_mu: 2.0
+    actor_noise_zeta_max: 16
+    actor_update_period: 2
+
+    critic_num_blocks: 2
+    critic_hidden_dim: 1024
+    critic_num_bins: 101
+    critic_min_v: ${eval:'-${runner.agent.normalized_G_max}'}
+    critic_max_v: ${eval:'${runner.agent.normalized_G_max}'}
+    critic_target_update_tau: 0.01
+
+    temp_initial_value: 0.01
+    temp_target_sigma: 0.15
+    temp_target_entropy: null
+
+    gamma: ${gamma}
+    n_step: ${n_step}
+
+    reward_heads:
+      enable: ${per_hand_actor_critic}
+      overrides: {}
+      side_actors: ${per_hand_actor_critic}
+      side_shared_blocks: 0 
+      side_bridge:
+        enable: false
+        after_block: 1
+        sg_other: true
+        dual_mode: true
+        eval_mode: "on"
+        expansion: 4
+
+    # n_future must match obs/flashdexretarget
+    traj_encoder:
+      enable: true
+      aggregation: conv1d
+      n_future: 10
+      n_sides: 1
+      latent_dim: 128
+      hidden_dim: 128
+      num_layers: 2
+
+    use_compile: true
+    compile_mode: "auto"
+    use_amp: true
+
+    load_optimizer: true
+    load_reward_normalizer: true

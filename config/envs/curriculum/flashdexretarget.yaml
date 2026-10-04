@@ -1,0 +1,53 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - assist_reward_terms
+
+commands:
+  object:
+    xfrc:
+      omega_rot: 0.0
+
+curriculum:
+
+  gravity_curriculum:
+    params:
+      schedule_steps: 0
+      full_g:         9.81
+
+  xfrc_curriculum_adaptive:
+    params:
+      kp_init:               80.0
+      kv_init:                5.0
+      force_range:           50.0
+      wait_epochs:            100
+      deque_len:               30
+      num_steps_per_env:       32
+      decay_cooldown_epochs:   40
+      kp_zero_thres:         0.05
+      kp_lower_zero_thres:    0.1
+
+      rot_stiffness_mult:    96.0
+      kp_floor:               0.0
+      kv_floor:               0.0
+      completion_thres:        0.65
+      dialback_completion_thres: 0.5
+      dialback_min_epochs:    500
+      seed:                    42
+      rew_thresholds:
+        task: 0.6
+        imi:  0.01
+        bc:   0.01
+      upper_ratios:
+        kp: 0.9
+        kv: 0.9
+        fr: 1.0
+      lower_ratios:
+        kp: 0.8
+        kv: 0.8
+        fr: 1.0
+      dialback_ratios:
+        kp: 0.98
+        kv: 0.98
+        fr: 0.98

@@ -1,0 +1,39 @@
+# @package _global_
+
+share_actor_critic_obs: true
+
+num_env_steps: 500_000_000
+num_train_envs: ${num_envs}
+
+step_offset: 0
+num_interaction_steps: ${eval:'int((${num_env_steps} - ${step_offset}) / ${num_train_envs})'}
+updates_per_interaction_step: 1
+
+save_checkpoint_per_env_step: 20_000_000
+
+save_checkpoint_per_interaction_step: ${eval:'max(1, int(${save_checkpoint_per_env_step} / ${num_train_envs}))'}
+logging_per_interaction_step: ${eval:'max(1, int(${num_interaction_steps} / 1000))'}
+
+save_path: "logs/${algorithm}/${logger.wandb.run_name}-TIMESTAMP"
+agent_load_path: null
+buffer_load_path: null
+save_replay_buffer: false
+
+runner:
+  seed: ${seed}
+  device: ${device}
+  max_iterations: ${num_interaction_steps}
+  step_offset: ${step_offset}
+  num_train_envs: ${num_train_envs}
+  updates_per_interaction_step: ${updates_per_interaction_step}
+  logging_per_interaction_step: ${logging_per_interaction_step}
+  save_checkpoint_per_interaction_step: ${save_checkpoint_per_interaction_step}
+
+  save_path: ${save_path}
+  agent_load_path: ${agent_load_path}
+  buffer_load_path: ${buffer_load_path}
+  save_replay_buffer: ${save_replay_buffer}
+  keep_last_checkpoint_only: true
+  share_actor_critic_obs: ${share_actor_critic_obs}
+
+  commands: ${commands}

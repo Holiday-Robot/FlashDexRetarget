@@ -1,0 +1,88 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local training output and large data trees (provided separately, not tracked)
+logs/
+wandb/
+rollouts/
+outputs/
+checkpoints/
+data
+
+# Un-ignore research-journaling artifacts under logs/initiatives/ and logs/_freestanding-smokes/.
+# Markdown discussions/findings/READMEs and shell wrappers are version-controlled;
+# everything else (train.log, checkpoints, wandb run dirs) stays gitignored.
+!logs/initiatives/
+!logs/initiatives/**/
+!logs/initiatives/**/*.md
+!logs/initiatives/**/*.sh
+!logs/_freestanding-smokes/
+!logs/_freestanding-smokes/**/
+!logs/_freestanding-smokes/**/*.md
+!logs/_freestanding-smokes/**/*.sh
+
+# claude_reports/index.html is curated (smoke-pilot prepends cards) — track it.
+# initiatives.html is auto-rebuilt by the supervisor — don't track it.
+!claude_reports/
+!claude_reports/index.html
+!claude_reports/*/
+!claude_reports/*/*.html
+claude_reports/initiatives.html
+
+# MANO models (licensed; mano.is.tue.mpg.de)
+assets/mano
+
+# Raw OakInk2 dataset (user provides separately)
+data_raw/
+MUJOCO_LOG.TXT
+
+.task/
+.progress/
+.docs/
+.plan/
+
+# Server-specific shell config (scripts/env.sh, written by scripts/setup.sh)
+scripts/env.sh
+
+.claude
+CLAUDE.md
+outputs/
+claude_reports/
+
+# uv lockfile (developer-local; conda is canonical per docs/setup.md §2)
+uv.lock
+
+# One-off analysis/plotting/dump scripts, kept locally but out of git.
+/scratch/
+
+# Generated plot artifacts and one-off experiment launchers (local-only).
+plots/
+scripts/exp/
+
+# Stray sbatch stdout dropped in the submit dir when a script omits --output
+slurm-*.out
+
+# Converted robot USDs (src/simulator/isaacsim/convert_assets.py --robot)
+assets/robot/xhand/urdf/converted*
+
+# Sharpa Isaac conversion artifacts (mirror of the xhand rule above).
+assets/robot/sharpa/urdf/converted*
+assets/robot/sharpa/converted/
+assets/robot/sharpa/bimanual_isaac.xml
+
+# viser + websockets for scripts/visualization.sh (kept out of the Isaac env)
+third_party/viewer_site/

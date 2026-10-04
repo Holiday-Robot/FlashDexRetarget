@@ -1,0 +1,60 @@
+# @package _global_
+
+terminations:
+  _target_: "envs.terminations.motion_tracking.MotionTrackingTerminations"
+
+  # ────── episode time-out (truncation) ──────────────────────────────────
+  time_out:
+    enabled: true
+    time_out: true
+
+  # ────── demo-clip end → episode = one demo ─────────────────────────────
+  motion_clip_ended:
+    enabled: true
+    time_out: true
+
+  # ────── tracking divergence ────────────────────────────────────────────
+  object_dropped:
+    enabled: true
+    params:
+      drop_margin: 0.10     # m below reference object z → "dropped"
+      floor_z:     null     # optional absolute floor (null = disabled)
+
+  task_reward_early_reset:
+    enabled: true
+    params:
+      task_term: tracking_obj_pcd_match_error_exp
+      threshold: 0.6
+      interval:  5
+
+  tracking_fingertip_diverged:
+    enabled: true
+    params:
+      threshold:   0.2      # metres (L0)
+      grace_steps: 15
+
+  # ────── physics sanity ──────────────────────────────────────
+  velocity_diverged:
+    enabled: true
+    params:
+      max_lin_vel: 100.0      # m/s
+      max_ang_vel: 200.0      # rad/s
+
+  joint_vel_sanity:
+    enabled: true
+    params:
+      max_joint_vel: 200.0    # rad/s
+
+  obj_lin_vel_sanity:
+    enabled: true
+    params:
+      max_obj_lin_vel: 100.0  # m/s
+
+  obj_ang_vel_sanity:
+    enabled: true
+    params:
+      max_obj_ang_vel: 200.0  # rad/s
+
+  # ────── NaN safety net ───────────────────────────
+  nan_guard:
+    enabled: true

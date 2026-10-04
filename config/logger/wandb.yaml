@@ -1,0 +1,15 @@
+# @package _global_
+
+logger:
+  type: "wandb"
+  wandb:
+    entity: null   # null: wandb's default entity, or $WANDB_ENTITY
+    project_name: FlashDexRetarget
+    group_name: flashdexretarget
+    run_name: flashdexretarget
+    tags: null
+    job_type: null  # optional; null = no job_type in wandb
+    mode: 'online'
+    resume: false # Resume training from a checkpoint
+    resumeid: null # exptid
+    upload_model: false
