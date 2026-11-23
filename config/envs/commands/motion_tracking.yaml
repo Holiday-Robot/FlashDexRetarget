@@ -92,11 +92,11 @@ commands:
       sides: [left]
 
     support_disks:
-      enable: false
+      enable: true
       count: 4
       radii: [0.08, 0.15, 0.25, 0.4]
       height: 0.01
-      radius_margin: 0.0
+      radius_margin: 0.1
       park: [0.0, 2.0, 0.5]
       park_stride: 0.6
       friction: [1.0, 0.005, 0.0001]

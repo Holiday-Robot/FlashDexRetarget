@@ -75,20 +75,28 @@ def _up_to_date(usd_path: str, sources: list[str]) -> bool:
     return all(os.path.getmtime(s) <= usd_mtime for s in sources if os.path.exists(s))
 
 
+def _physical_inertia(inertia) -> bool:
+    import numpy as np
+
+    moments = np.linalg.eigvalsh(inertia)
+    return bool(moments[0] > 0.0 and moments[0] + moments[1] >= moments[2])
+
+
 def object_mass_properties(obj_dir: str):
-    """(mass, raw mass, com, inertia) at density 800 with [0.05, 0.5] kg clamp;
-    convex-parts fallback when visual.obj is not watertight."""
+    """(mass, raw mass, com, inertia) at density 800 with [0.05, 0.5] kg clamp, from the volume
+    visual.obj encloses (open scans too: the convex parts bridge walls and grooves, so their volume
+    is several times the real solid); convex-parts fallback when that volume or inertia is not physical."""
     import trimesh
 
     visual = trimesh.load(os.path.join(obj_dir, "visual.obj"), force="mesh")
     solid = visual
-    if not visual.is_watertight or visual.volume <= 0.0:
+    if visual.volume <= 0.0 or not _physical_inertia(visual.moment_inertia):
         parts = []
         convex_dir = os.path.join(obj_dir, "convex")
         for f in sorted(os.listdir(convex_dir), key=lambda s: int(os.path.splitext(s)[0])):
             parts.append(trimesh.load(os.path.join(convex_dir, f), force="mesh"))
         solid = trimesh.util.concatenate(parts)
-        _log(f"  visual.obj not watertight -> mass props from {len(parts)} convex parts")
+        _log(f"  visual.obj volume/inertia not physical -> mass props from {len(parts)} convex parts")
     solid.density = OBJ_DENSITY
     mass_raw = float(solid.mass)
     mass = min(max(mass_raw, OBJ_MASS_CLAMP[0]), OBJ_MASS_CLAMP[1])
@@ -166,6 +174,7 @@ def convert_object(obj_dir: str, force: bool, collision_visual: bool = False) ->
     sources = [os.path.join(obj_dir, "visual.obj")]
     convex_dir = os.path.join(obj_dir, "convex")
     sources += [os.path.join(convex_dir, f) for f in os.listdir(convex_dir)]
+    sources.append(os.path.abspath(__file__))  # the mass rule lives here: a change re-authors every object
     if not force and _up_to_date(usd_path, sources):
         _log(f"up to date, skipping: {usd_path}")
         return
